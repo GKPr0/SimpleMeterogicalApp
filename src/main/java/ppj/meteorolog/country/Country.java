@@ -1,26 +1,29 @@
 package ppj.meteorolog.country;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ppj.meteorolog.city.City;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Table(name = "countries")
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class Country {
     @Id
     private String code;
-    private String name;;
+    private String name;
 
     @OneToMany(mappedBy = "country")
+    @JsonIgnoreProperties("country")
     private Set<City> cities;
+
+
+    public Country(String code, String name) {
+        this.code = code;
+        this.name = name;
+    }
 }

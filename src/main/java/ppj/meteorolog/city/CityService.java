@@ -3,7 +3,6 @@ package ppj.meteorolog.city;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Objects;
 import java.util.Optional;
 
 
@@ -25,7 +24,7 @@ public class CityService {
     }
 
     public City getCity(String countryCode, String cityName) {
-       return cityRepository.findCityByNameAndCountry_Code(countryCode, cityName)
+       return cityRepository.findCityByNameAndCountry_Code(cityName, countryCode)
                .orElseThrow(() -> new IllegalAccessError("City not found"));
     }
 
@@ -47,7 +46,6 @@ public class CityService {
         //TODO check if values from updated city can be assigned to City
 
         city.setName(updatedCity.getName());
-        city.setDisplayName(updatedCity.getDisplayName());
         city.setCountry(updatedCity.getCountry());
         city.setLatitude(updatedCity.getLatitude());
         city.setLongitude(updatedCity.getLongitude());
