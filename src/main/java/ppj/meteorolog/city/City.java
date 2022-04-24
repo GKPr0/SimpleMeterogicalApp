@@ -10,10 +10,10 @@ import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cities")
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "country_id"})})
 public class City {
 
     @Id
@@ -25,6 +25,7 @@ public class City {
     private String name;
 
     @ManyToOne
+    @JoinColumn(name = "country_id", referencedColumnName = "id", nullable = false)
     @NotNull(message = "Country is required")
     @JsonIgnoreProperties("cities")
     private Country country;
