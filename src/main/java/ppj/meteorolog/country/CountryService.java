@@ -21,12 +21,12 @@ public class CountryService {
     }
 
     public Country getCountry(String countryCode) {
-        return countryRepository.findById(countryCode)
+        return countryRepository.findByCode(countryCode)
                 .orElseThrow((() -> new CountryNotFoundException(countryCode)));
     }
 
     public void createCountry(Country country) {
-        Optional<Country> countryInDb = countryRepository.findById(country.getCode());
+        Optional<Country> countryInDb = countryRepository.findByCode(country.getCode());
 
         if (countryInDb.isPresent()) {
             throw new CountryAlreadyExistsException(country.getCode());
@@ -37,7 +37,7 @@ public class CountryService {
 
     @Transactional
     public void updateCountry(String countryCode, Country updatedCountry) {
-        Country country = countryRepository.findById(countryCode)
+        Country country = countryRepository.findByCode(countryCode)
                 .orElseThrow((() -> new CountryNotFoundException(countryCode)));
 
         // TODO check if values are valid
@@ -47,7 +47,7 @@ public class CountryService {
     }
 
     public void deleteCountry(String countryCode) {
-        countryRepository.findById(countryCode)
+        countryRepository.findByCode(countryCode)
             .ifPresentOrElse(countryRepository::delete,
             () -> { throw new CountryNotFoundException(countryCode); });
     }

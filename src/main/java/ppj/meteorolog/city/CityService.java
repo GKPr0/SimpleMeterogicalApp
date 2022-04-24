@@ -40,7 +40,7 @@ public class CityService {
 
     @Transactional
     public void updateCity(String countryCode, String cityName, City updatedCity) {
-        City city = cityRepository.findCityByNameAndCountry_Code(countryCode, cityName)
+        City city = cityRepository.findCityByNameAndCountry_Code(cityName, countryCode)
                 .orElseThrow(() -> new IllegalAccessError("City not found"));
 
         //TODO check if values from updated city can be assigned to City
@@ -52,7 +52,7 @@ public class CityService {
     }
 
     public void deleteCity(String countryCode, String cityName) {
-        cityRepository.findCityByNameAndCountry_Code(countryCode, cityName)
+        cityRepository.findCityByNameAndCountry_Code(cityName, countryCode)
             .ifPresentOrElse(cityRepository::delete,
             () -> { throw new IllegalAccessError("City not found"); });
     }
