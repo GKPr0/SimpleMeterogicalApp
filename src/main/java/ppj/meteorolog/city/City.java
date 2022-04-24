@@ -29,9 +29,6 @@ public class City {
     @JsonIgnoreProperties("cities")
     private Country country;
 
-    private double latitude;
-
-    private double longitude;
 
     public City(String name, Country country) {
         this.name = name;
