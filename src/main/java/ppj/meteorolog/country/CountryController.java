@@ -17,30 +17,27 @@ public class CountryController extends BaseApiController {
     }
 
     @GetMapping
-    public Iterable<Country> getAllCountries() {
-        return countryService.getAllCountries();
+    public ResponseEntity<?> getAllCountries() {
+        return HandleResult(countryService.getAllCountries());
     }
 
     @GetMapping(path = "/{countryCode}")
-    public Country getCountry(@PathVariable String countryCode) {
-        return countryService.getCountry(countryCode);
+    public ResponseEntity<?> getCountry(@PathVariable String countryCode) {
+        return HandleResult(countryService.getCountry(countryCode));
     }
 
     @PostMapping
-    public ResponseEntity<String> createCountry(@Valid @RequestBody Country country) {
-         countryService.createCountry(country);
-         return ResponseEntity.ok("Country created");
+    public ResponseEntity<?> createCountry(@Valid @RequestBody Country country) {
+         return HandleResult(countryService.createCountry(country));
     }
 
     @PutMapping(path = "/{countryCode}")
-    public ResponseEntity<String> updateCountry(@PathVariable String countryCode, @RequestBody Country country) {
-        countryService.updateCountry(countryCode, country);
-        return ResponseEntity.ok("Country updated");
+    public ResponseEntity<?> updateCountry(@PathVariable String countryCode, @Valid @RequestBody Country country) {
+        return HandleResult(countryService.updateCountry(countryCode, country));
     }
 
     @DeleteMapping(path = "/{countryCode}")
-    public ResponseEntity<String> deleteCountry(@PathVariable String countryCode) {
-        countryService.deleteCountry(countryCode);
-        return ResponseEntity.ok("Country deleted");
+    public ResponseEntity<?> deleteCountry(@PathVariable String countryCode) {
+        return HandleResult(countryService.deleteCountry(countryCode));
     }
 }

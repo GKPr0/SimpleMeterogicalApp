@@ -19,36 +19,33 @@ public class CityController extends BaseApiController {
     }
 
     @GetMapping
-    public Iterable<City> getAllCities() {
-        return cityService.getAllCities();
+    public ResponseEntity<?> getAllCities() {
+        return HandleResult(cityService.getAllCities());
     }
 
     @GetMapping(path = "/{countryCode}")
-    public Iterable<City> getAllCitiesInCountry(@PathVariable String countryCode) {
-        return cityService.getAllCitiesInCountry(countryCode);
+    public ResponseEntity<?> getAllCitiesInCountry(@PathVariable String countryCode) {
+        return HandleResult(cityService.getAllCitiesInCountry(countryCode));
     }
 
     @GetMapping(path = "/{countryCode}/{cityName}")
-    public City getCity(@PathVariable String countryCode, @PathVariable String cityName) {
-        return cityService.getCity(countryCode, cityName);
+    public ResponseEntity<?> getCity(@PathVariable String countryCode, @PathVariable String cityName) {
+        return HandleResult(cityService.getCity(countryCode, cityName));
     }
 
     @PostMapping
-    public ResponseEntity<String> createCity(@Valid @RequestBody City city) {
-        cityService.createCity(city);
-        return ResponseEntity.ok("City created");
+    public ResponseEntity<?> createCity(@Valid @RequestBody City city) {
+        return HandleResult(cityService.createCity(city));
     }
 
     @PutMapping(path="/{countryCode}/{cityName}")
-    public ResponseEntity<String> updateCity(@PathVariable String countryCode, @PathVariable String cityName, @RequestBody City city) {
-        cityService.updateCity(countryCode, cityName, city);
-        return ResponseEntity.ok("City updated");
+    public ResponseEntity<?> updateCity(@PathVariable String countryCode, @PathVariable String cityName, @Valid @RequestBody City city) {
+        return HandleResult(cityService.updateCity(countryCode, cityName, city));
     }
 
     @DeleteMapping(path="/{countryCode}/{cityName}")
-    public ResponseEntity<String> deleteCity(@PathVariable String countryCode, @PathVariable String cityName) {
-        cityService.deleteCity(countryCode, cityName);
-        return ResponseEntity.ok("City deleted");
+    public ResponseEntity<?> deleteCity(@PathVariable String countryCode, @PathVariable String cityName) {
+        return HandleResult(cityService.deleteCity(countryCode, cityName));
     }
 }
 

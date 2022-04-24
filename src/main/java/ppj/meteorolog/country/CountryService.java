@@ -1,8 +1,7 @@
 package ppj.meteorolog.country;
 
 import org.springframework.stereotype.Service;
-import ppj.meteorolog.country.exceptions.CountryAlreadyExistsException;
-import ppj.meteorolog.country.exceptions.CountryNotFoundException;
+import ppj.meteorolog.shared.Result;
 
 import javax.transaction.Transactional;
 import java.util.Optional;
@@ -16,39 +15,54 @@ public class CountryService {
         this.countryRepository = countryRepository;
     }
 
-    public Iterable<Country> getAllCountries() {
-        return countryRepository.findAll();
+    public Result<Iterable<Country>> getAllCountries() {
+        return Result.success(countryRepository.findAll());
     }
 
-    public Country getCountry(String countryCode) {
-        return countryRepository.findByCode(countryCode)
-                .orElseThrow((() -> new CountryNotFoundException(countryCode)));
+    public Result<Country> getCountry(String countryCode) {
+        Optional<Country> optionalCountry = countryRepository.findByCode(countryCode);
+
+        if(optionalCountry.isEmpty())
+            return Result.failure("Country with code " + countryCode + " not found");
+
+        return Result.success(optionalCountry.get());
     }
 
-    public void createCountry(Country country) {
-        Optional<Country> countryInDb = countryRepository.findByCode(country.getCode());
+    public Result<String> createCountry(Country country) {
+        String countryCode = country.getCode();
 
-        if (countryInDb.isPresent()) {
-            throw new CountryAlreadyExistsException(country.getCode());
-        }
+        Optional<Country> optionalCountry = countryRepository.findByCode(countryCode);
+
+        if (optionalCountry.isPresent())
+            return Result.failure("Country with code " + countryCode + " already exists");
 
         countryRepository.save(country);
+
+        return Result.success("Country " + countryCode + " created");
     }
 
     @Transactional
-    public void updateCountry(String countryCode, Country updatedCountry) {
-        Country country = countryRepository.findByCode(countryCode)
-                .orElseThrow((() -> new CountryNotFoundException(countryCode)));
+    public Result<String> updateCountry(String countryCode, Country updatedCountry) {
+        Optional<Country> optionalCountry = countryRepository.findByCode(countryCode);
 
-        // TODO check if values are valid
+        if(optionalCountry.isEmpty())
+            return Result.failure("Country with code " + countryCode + " not found");
 
+        Country country = optionalCountry.get();
         country.setName(updatedCountry.getName());
         country.setCode(updatedCountry.getCode());
+
+        return Result.success("Country " + countryCode + " updated");
     }
 
-    public void deleteCountry(String countryCode) {
-        countryRepository.findByCode(countryCode)
-            .ifPresentOrElse(countryRepository::delete,
-            () -> { throw new CountryNotFoundException(countryCode); });
+    public Result<String> deleteCountry(String countryCode) {
+        Optional<Country> optionalCountry = countryRepository.findByCode(countryCode);
+
+        if(optionalCountry.isEmpty())
+            return Result.failure("Country with code " + countryCode + " not found");
+
+        countryRepository.delete(optionalCountry.get());
+
+        return Result.success("Country " + countryCode + " deleted");
     }
 }
