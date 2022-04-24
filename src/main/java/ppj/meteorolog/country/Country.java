@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name="countries")
+@Table
 @Getter
 @Setter
 @NoArgsConstructor
