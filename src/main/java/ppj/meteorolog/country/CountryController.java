@@ -1,10 +1,14 @@
 package ppj.meteorolog.country;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ppj.meteorolog.shared.BaseApiController;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping(path = "api/v1/country")
-public class CountryController {
+public class CountryController extends BaseApiController {
 
     private final CountryService countryService;
 
@@ -23,17 +27,20 @@ public class CountryController {
     }
 
     @PostMapping
-    public void createCountry(@RequestBody Country country) {
-        countryService.createCountry(country);
+    public ResponseEntity<String> createCountry(@Valid @RequestBody Country country) {
+         countryService.createCountry(country);
+         return ResponseEntity.ok("Country created");
     }
 
     @PutMapping(path = "/{countryCode}")
-    public void updateCountry(@PathVariable String countryCode, @RequestBody Country country) {
+    public ResponseEntity<String> updateCountry(@PathVariable String countryCode, @RequestBody Country country) {
         countryService.updateCountry(countryCode, country);
+        return ResponseEntity.ok("Country updated");
     }
 
     @DeleteMapping(path = "/{countryCode}")
-    public void deleteCountry(@PathVariable String countryCode) {
+    public ResponseEntity<String> deleteCountry(@PathVariable String countryCode) {
         countryService.deleteCountry(countryCode);
+        return ResponseEntity.ok("Country deleted");
     }
 }

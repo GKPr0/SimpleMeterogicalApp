@@ -15,7 +15,6 @@ import javax.validation.constraints.NotBlank;
 import java.util.Set;
 import java.util.UUID;
 
-
 @Entity
 @Table(name="countries")
 @Getter
