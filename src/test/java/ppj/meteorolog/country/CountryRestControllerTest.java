@@ -3,6 +3,8 @@ package ppj.meteorolog.country;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -97,56 +99,30 @@ public class CountryRestControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    public void testCreateCountryWithMissingCode_thenStatus400() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{\"name\":\"Test\"}",
+            "{\"name\":\"Test\",\"code\":\"\"}",
+            "{\"name\":\"Test\",\"code\":null}"
+    })
+    public void testCreateCountryWithInvalidCode_thenStatus400(String bodyContent) throws Exception {
         mvc.perform(post("/api/v1/country")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Test\"}"))
+                .content(bodyContent))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code", is("Country code is required")));
     }
 
-    @Test
-    public void testCreateCountryWithEmptyCode_thenStatus400() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{\"code\":\"TT\"}",
+            "{\"name\":\"\",\"code\":\"TT\"}",
+            "{\"name\":null,\"code\":\"TT\"}"
+    })
+    public void testCreateCountryWithInvalidName_thenStatus400(String bodyContent) throws Exception {
         mvc.perform(post("/api/v1/country")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Test\",\"code\":\"\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code", is("Country code is required")));
-    }
-
-    @Test
-    public void testCreateCountryWithNullCode_thenStatus400() throws Exception {
-        mvc.perform(post("/api/v1/country")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Test\",\"code\":null}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code", is("Country code is required")));
-    }
-
-    @Test
-    public void testCreateCountryWithMissingName_thenStatus400() throws Exception {
-        mvc.perform(post("/api/v1/country")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"code\":\"TT\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name", is("Country name is required")));
-    }
-
-    @Test
-    public void testCreateCountryWithEmptyName_thenStatus400() throws Exception {
-        mvc.perform(post("/api/v1/country")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"\",\"code\":\"TT\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name", is("Country name is required")));
-    }
-
-    @Test
-    public void testCreateCountryWithNullName_thenStatus400() throws Exception {
-        mvc.perform(post("/api/v1/country")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":null,\"code\":\"TT\"}"))
+                .content(bodyContent))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.name", is("Country name is required")));
     }
@@ -179,56 +155,30 @@ public class CountryRestControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    public void testUpdateCountryWithMissingCode_thenStatus400() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{\"name\":\"Test\"}",
+            "{\"name\":\"Test\",\"code\":\"\"}",
+            "{\"name\":\"Test\",\"code\":null}"
+    })
+    public void testUpdateCountryWithInvalidCode_thenStatus400(String bodyContent) throws Exception {
         mvc.perform(put("/api/v1/country/CZ")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Test\"}"))
+                .content(bodyContent))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code", is("Country code is required")));
     }
 
-    @Test
-    public void testUpdateCountryWithEmptyCode_thenStatus400() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{\"code\":\"TT\"}",
+            "{\"name\":\"\",\"code\":\"TT\"}",
+            "{\"name\":null,\"code\":\"TT\"}"
+    })
+    public void testUpdateCountryWithInvalidName_thenStatus400(String bodyContent) throws Exception {
         mvc.perform(put("/api/v1/country/CZ")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Test\",\"code\":\"\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code", is("Country code is required")));
-    }
-
-    @Test
-    public void testUpdateCountryWithNullCode_thenStatus400() throws Exception {
-        mvc.perform(put("/api/v1/country/CZ")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Test\",\"code\":null}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code", is("Country code is required")));
-    }
-
-    @Test
-    public void testUpdateCountryWithMissingName_thenStatus400() throws Exception {
-        mvc.perform(put("/api/v1/country/CZ")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"code\":\"TT\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name", is("Country name is required")));
-    }
-
-    @Test
-    public void testUpdateCountryWithEmptyName_thenStatus400() throws Exception {
-        mvc.perform(put("/api/v1/country/CZ")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"\",\"code\":\"TT\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name", is("Country name is required")));
-    }
-
-    @Test
-    public void testUpdateCountryWithNullName_thenStatus400() throws Exception {
-        mvc.perform(put("/api/v1/country/CZ")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":null,\"code\":\"TT\"}"))
+                .content(bodyContent))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.name", is("Country name is required")));
     }
