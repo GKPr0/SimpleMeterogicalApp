@@ -23,7 +23,7 @@ public class CountryService {
         Optional<Country> optionalCountry = countryRepository.findByCode(countryCode);
 
         if(optionalCountry.isEmpty())
-            return Result.failure("Country with code " + countryCode + " not found");
+            return null;
 
         return Result.success(optionalCountry.get());
     }
@@ -46,7 +46,7 @@ public class CountryService {
         Optional<Country> optionalCountry = countryRepository.findByCode(countryCode);
 
         if(optionalCountry.isEmpty())
-            return Result.failure("Country with code " + countryCode + " not found");
+            return null;
 
         Country country = optionalCountry.get();
         country.setName(updatedCountry.getName());
@@ -59,7 +59,7 @@ public class CountryService {
         Optional<Country> optionalCountry = countryRepository.findByCode(countryCode);
 
         if(optionalCountry.isEmpty())
-            return Result.failure("Country with code " + countryCode + " not found");
+            return null;
 
         countryRepository.delete(optionalCountry.get());
 

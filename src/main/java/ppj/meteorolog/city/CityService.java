@@ -28,7 +28,7 @@ public class CityService {
         Iterable<City> cities = cityRepository.findCitiesByCountry_Code(countryCode);
 
         if(cities.spliterator().getExactSizeIfKnown() == 0)
-            return Result.failure("No cities found in country " + countryCode);
+            return null;
 
         return Result.success(cities);
     }
@@ -37,7 +37,7 @@ public class CityService {
        Optional<City> optionalCity = cityRepository.findCityByNameAndCountry_Code(cityName, countryCode);
 
        if(optionalCity.isEmpty())
-           return Result.failure("City with name " + cityName + " not found in country " + countryCode);
+           return null;
 
        return Result.success(optionalCity.get());
     }
@@ -67,7 +67,7 @@ public class CityService {
         Optional<City> optionalCity = cityRepository.findCityByNameAndCountry_Code(cityName, countryCode);
 
         if(optionalCity.isEmpty())
-            return Result.failure("City with name " + cityName + " not found in country " + countryCode);
+            return null;
 
         City city = optionalCity.get();
         String updatedCityName = updatedCity.getName();
@@ -94,7 +94,7 @@ public class CityService {
         Optional<City> optionalCity = cityRepository.findCityByNameAndCountry_Code(cityName, countryCode);
 
         if(optionalCity.isEmpty())
-            return Result.failure("City with name " + cityName + " not found in country " + countryCode);
+            return null;
 
         cityRepository.delete(optionalCity.get());
 
