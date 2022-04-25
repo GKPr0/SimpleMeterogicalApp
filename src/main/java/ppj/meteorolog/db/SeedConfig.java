@@ -3,6 +3,7 @@ package ppj.meteorolog.db;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import ppj.meteorolog.city.City;
 import ppj.meteorolog.city.CityRepository;
 import ppj.meteorolog.country.Country;
@@ -14,6 +15,7 @@ import java.util.List;
 public class SeedConfig {
 
     @Bean
+    @Profile("dev")
     CommandLineRunner commandLineRunner(CountryRepository countryRepository, CityRepository cityRepository) {
         return  args -> {
             Country cz = new Country("CZ", "Czech Republic");
