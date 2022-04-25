@@ -15,19 +15,19 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CountryServiceTest {
 
     @Autowired
-    private CountryRepository countryRepository;
+    private CountryDataInitializer dataInitializer;
 
     @Autowired
     private CountryService countryService;
 
     @BeforeEach
     public void setup() {
-        CountryDataInitializer.seed(countryRepository);
+        dataInitializer.setup();
     }
 
     @AfterEach
-    public void tearDown() {
-        countryRepository.deleteAll();
+    public void clear() {
+        dataInitializer.clear();
     }
 
     @Test

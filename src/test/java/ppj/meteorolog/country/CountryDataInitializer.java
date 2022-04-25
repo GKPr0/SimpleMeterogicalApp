@@ -1,13 +1,19 @@
 package ppj.meteorolog.country;
 
-import ppj.meteorolog.country.Country;
-import ppj.meteorolog.country.CountryRepository;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class CountryDataInitializer {
 
-    public static void seed(CountryRepository countryRepository) {
+    private final CountryRepository countryRepository;
+
+    public CountryDataInitializer(CountryRepository countryRepository) {
+        this.countryRepository = countryRepository;
+    }
+
+    public void setup() {
 
         Country cz = new Country("CZ", "Czech Republic");
         Country uk = new Country("UK", "United Kingdom");
@@ -17,5 +23,9 @@ public class CountryDataInitializer {
         countryRepository.saveAll(
                 List.of(cz, uk, us, it)
         );
+    }
+
+    public void clear() {
+        countryRepository.deleteAll();
     }
 }
