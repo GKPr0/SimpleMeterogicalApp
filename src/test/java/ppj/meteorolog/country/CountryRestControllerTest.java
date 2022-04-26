@@ -12,7 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import ppj.meteorolog.Application;
+import ppj.meteorolog.city.City;
+import ppj.meteorolog.city.CityRepository;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -37,6 +41,9 @@ public class CountryRestControllerTest {
 
     @Autowired
     private CountryRepository countryRepository;
+
+    @Autowired
+    private CityRepository cityRepository;
 
     @BeforeEach
     public void setup() {
@@ -204,5 +211,24 @@ public class CountryRestControllerTest {
     public void testDeleteNonExistentCountry_thenStatus404() throws Exception {
         mvc.perform(delete("/api/v1/country/XX"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testDeleteCountryAndEnsureAllCitiesInCountryWasDeleted_thenStatus200() throws Exception {
+        // Assign Cities to country
+        Optional<Country> country = countryRepository.findByCode("CZ");
+        assertTrue(country.isPresent());
+        City city1 = new City("City 1", country.get());
+        City city2 = new City("City 2", country.get());
+        cityRepository.saveAll(List.of(city1, city2 ));
+
+        Iterable<City> cities = cityRepository.findCitiesByCountry_Code("CZ");
+        assertEquals(cities.spliterator().getExactSizeIfKnown(), 2);
+
+        mvc.perform(delete("/api/v1/country/CZ"))
+                .andExpect(status().isOk());
+
+        Iterable<City> deletedCities = cityRepository.findCitiesByCountry_Code("CZ");
+        assertEquals(deletedCities.spliterator().getExactSizeIfKnown(), 0);
     }
 }
