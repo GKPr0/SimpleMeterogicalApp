@@ -19,5 +19,10 @@
       "name": "influxdb.token",
       "type": "java.lang.String",
       "description": "Connection token to InfluxDB."
+    },
+    {
+      "name": "influxdb.retention-period",
+      "type": "java.lang.Integer",
+      "description": "Duration in seconds for how long data will be kept in the database. 0 means infinite."
     }
   ] }
