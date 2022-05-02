@@ -1,27 +1,26 @@
-package ppj.meteorolog.weather;
+package ppj.meteorolog.db;
 
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.domain.Bucket;
-import com.influxdb.client.domain.BucketRetentionRules;
-import com.influxdb.exceptions.InfluxException;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.java.Log;
-import org.springframework.boot.autoconfigure.influx.InfluxDbAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.annotation.Validated;
+import ppj.meteorolog.db.exceptions.BucketNotFoundException;
+import ppj.meteorolog.db.exceptions.RetentionPeriodException;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import java.util.List;
 
+@Validated
 @Configuration
 @ConfigurationProperties(prefix = "influxdb")
 @Getter
 @Setter
-public class WeatherConfiguration {
+public class InfluxDbConfig {
 
     @NotBlank
     private String bucket;
@@ -35,7 +34,11 @@ public class WeatherConfiguration {
     @NotBlank
     private String url;
 
+    @Min(3600)
     private Integer retentionPeriod;
+
+    @Min(3600)
+    private Long shardGroupDuration;
 
     @Bean
     public InfluxDBClient influxDBClient() {
@@ -48,13 +51,16 @@ public class WeatherConfiguration {
         Bucket bucketClient = influxDBClient.getBucketsApi().findBucketByName(bucket);
 
         if(bucketClient == null)
-            throw new InfluxException("Bucket not found");
+            throw new BucketNotFoundException(bucket);
 
-        BucketRetentionRules bucketRetentionRules = bucketClient.getRetentionRules().get(0);
-        if(retentionPeriod < bucketRetentionRules.getShardGroupDurationSeconds() && retentionPeriod !=0)
-            throw new InfluxException("Retention period cannot be smaller than shard group duration");
+        if(retentionPeriod !=0 && retentionPeriod < shardGroupDuration)
+            throw new RetentionPeriodException(retentionPeriod, shardGroupDuration);
 
-        bucketRetentionRules.setEverySeconds(retentionPeriod);
+        bucketClient
+                .getRetentionRules()
+                .get(0)
+                .everySeconds(retentionPeriod)
+                .shardGroupDurationSeconds(shardGroupDuration);
 
         influxDBClient.getBucketsApi().updateBucket(bucketClient);
     }
