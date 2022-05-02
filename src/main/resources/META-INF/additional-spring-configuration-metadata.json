@@ -1,0 +1,23 @@
+{
+  "properties": [
+    {
+      "name": "influxdb.url",
+      "type": "java.lang.String",
+      "description": "URL of the InfluxDB server. Example: http://localhost:8086."
+    },
+    {
+      "name": "influxdb.org",
+      "type": "java.lang.String",
+      "description": "Name of organization in InfluxDB. Example: Development."
+    },
+    {
+      "name": "influxdb.bucket",
+      "type": "java.lang.String",
+      "description": "Name of bucket in InfluxDB. Example: Metrics."
+    },
+    {
+      "name": "influxdb.token",
+      "type": "java.lang.String",
+      "description": "Connection token to InfluxDB."
+    }
+  ] }
