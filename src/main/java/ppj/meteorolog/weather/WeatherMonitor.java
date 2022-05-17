@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -20,6 +21,7 @@ import reactor.core.publisher.Mono;
 import java.time.Instant;
 
 @Service
+@Profile("!test")
 public class WeatherMonitor {
 
     @Value("${openWeatherApi.url.weather.current}")
