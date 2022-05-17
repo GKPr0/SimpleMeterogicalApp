@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ppj.meteorolog.shared.BaseApiController;
+import ppj.meteorolog.shared.BlockInReadOnlyMode;
 
 import javax.validation.Valid;
 
@@ -34,16 +35,19 @@ public class CityController extends BaseApiController {
     }
 
     @PostMapping
+    @BlockInReadOnlyMode
     public ResponseEntity<?> createCity(@Valid @RequestBody City city) {
         return HandleResult(cityService.createCity(city));
     }
 
     @PutMapping(path="/{countryCode}/{cityName}")
+    @BlockInReadOnlyMode
     public ResponseEntity<?> updateCity(@PathVariable String countryCode, @PathVariable String cityName, @Valid @RequestBody City city) {
         return HandleResult(cityService.updateCity(countryCode, cityName, city));
     }
 
     @DeleteMapping(path="/{countryCode}/{cityName}")
+    @BlockInReadOnlyMode
     public ResponseEntity<?> deleteCity(@PathVariable String countryCode, @PathVariable String cityName) {
         return HandleResult(cityService.deleteCity(countryCode, cityName));
     }

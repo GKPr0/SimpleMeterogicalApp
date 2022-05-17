@@ -49,5 +49,10 @@
       "name": "openWeatherApi.url.weather.current",
       "type": "java.lang.String",
       "description": "Url structure for current weather measurement from OpenWeatherMap."
+    },
+    {
+      "name": "app.isReadOnly",
+      "type": "java.lang.String",
+      "description": "Defines if the application is read only or not. Example: true."
     }
   ] }

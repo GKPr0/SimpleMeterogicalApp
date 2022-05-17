@@ -3,6 +3,7 @@ package ppj.meteorolog.country;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ppj.meteorolog.shared.BaseApiController;
+import ppj.meteorolog.shared.BlockInReadOnlyMode;
 
 import javax.validation.Valid;
 
@@ -27,16 +28,19 @@ public class CountryController extends BaseApiController {
     }
 
     @PostMapping
+    @BlockInReadOnlyMode
     public ResponseEntity<?> createCountry(@Valid @RequestBody Country country) {
          return HandleResult(countryService.createCountry(country));
     }
 
     @PutMapping(path = "/{countryCode}")
+    @BlockInReadOnlyMode
     public ResponseEntity<?> updateCountry(@PathVariable String countryCode, @Valid @RequestBody Country country) {
         return HandleResult(countryService.updateCountry(countryCode, country));
     }
 
     @DeleteMapping(path = "/{countryCode}")
+    @BlockInReadOnlyMode
     public ResponseEntity<?> deleteCountry(@PathVariable String countryCode) {
         return HandleResult(countryService.deleteCountry(countryCode));
     }

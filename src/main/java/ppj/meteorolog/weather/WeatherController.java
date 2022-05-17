@@ -3,6 +3,7 @@ package ppj.meteorolog.weather;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ppj.meteorolog.shared.BaseApiController;
+import ppj.meteorolog.shared.BlockInReadOnlyMode;
 
 import javax.validation.Valid;
 
@@ -37,11 +38,13 @@ public class WeatherController extends BaseApiController {
     }
 
     @PostMapping
+    @BlockInReadOnlyMode
     public ResponseEntity<?> addWeatherMeasurementRecord(@Valid @RequestBody WeatherMeasurement weather) {
         return HandleResult(weatherService.addWeatherMeasurementRecord(weather));
     }
 
     @DeleteMapping("/{countryCode}/{cityName}/{timestamp}")
+    @BlockInReadOnlyMode
     public ResponseEntity<?> deleteWeatherMeasurementRecord(@PathVariable String countryCode, @PathVariable String cityName, @PathVariable String timestamp) {
         return HandleResult(weatherService.deleteWeatherMeasurementRecord(countryCode, cityName, timestamp));
     }

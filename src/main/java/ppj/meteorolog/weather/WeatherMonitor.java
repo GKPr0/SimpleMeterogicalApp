@@ -12,10 +12,10 @@ import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import ppj.meteorolog.city.City;
 import ppj.meteorolog.city.CityRepository;
+import ppj.meteorolog.shared.BlockInReadOnlyMode;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -43,6 +43,7 @@ public class WeatherMonitor {
     }
 
     @Scheduled(fixedRateString = "${openWeatherApi.downloadRate}")
+    @BlockInReadOnlyMode
     public void updateWeather() {
         Iterable<City> cities = cityRepository.findAll();
 
