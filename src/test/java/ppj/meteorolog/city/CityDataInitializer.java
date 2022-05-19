@@ -11,10 +11,10 @@ import java.util.List;
 public class CityDataInitializer {
 
     @Autowired
-    private final CityRepository cityRepository;
+    public final CityRepository cityRepository;
 
     @Autowired
-    private final CountryRepository countryRepository;
+    public final CountryRepository countryRepository;
 
     public CityDataInitializer(CityRepository cityRepository, CountryRepository countryRepository) {
         this.cityRepository = cityRepository;

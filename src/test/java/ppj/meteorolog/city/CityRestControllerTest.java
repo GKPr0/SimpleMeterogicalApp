@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import ppj.meteorolog.Application;
+import ppj.meteorolog.country.Country;
 
 import java.util.Optional;
 
@@ -174,6 +175,24 @@ public class CityRestControllerTest {
         mvc.perform(post("/api/v1/city")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testCreateCityWhenMaxCityCountHasBeenReached_thenStatus400() throws Exception{
+        dataInitializer.clear();
+
+        Country country = new Country("CZ", "Czech Republic");
+        dataInitializer.countryRepository.save(country);
+
+        for (int i = 0; i < 60; i++) {
+            City city = new City("Test city " + i, country);
+            dataInitializer.cityRepository.save(city);
+        }
+
+        mvc.perform(post("/api/v1/city")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Brno\",\"country\":{\"code\":\"CZ\"}}"))
                 .andExpect(status().isBadRequest());
     }
 

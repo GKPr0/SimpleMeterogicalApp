@@ -105,6 +105,24 @@ public class CityServiceTest {
     }
 
     @Test
+    public void testCreateCityWhenMaxCityCountHasBeenReached(){
+        dataInitializer.clear();
+
+        Country country = new Country("CZ", "Czech Republic");
+        dataInitializer.countryRepository.save(country);
+
+        for (int i = 0; i < 60; i++) {
+            City city = new City("Test city " + i, country);
+            dataInitializer.cityRepository.save(city);
+        }
+
+        City city = new City("Liberec", country);
+        Result<?> createResult = cityService.createCity(city);
+        assertFalse(createResult.getIsSuccess());
+        assertEquals(createResult.getError(),"Cannot create more than 60 cities");
+    }
+
+    @Test
     public void testUpdateCityName() {
         Country targetCountry = new Country("CZ", "Czech Republic");
         City city = new City("Liberec (updated)", targetCountry);
