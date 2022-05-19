@@ -7,6 +7,7 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import org.springframework.stereotype.Repository;
+import ppj.meteorolog.db.InfluxDbConfig;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -19,9 +20,11 @@ import java.util.UUID;
 public class WeatherRepository {
 
     private final InfluxDBClient influxDBClient;
+    private final InfluxDbConfig config;
 
-    public WeatherRepository(InfluxDBClient influxDBClient) {
+    public WeatherRepository(InfluxDBClient influxDBClient, InfluxDbConfig config) {
         this.influxDBClient = influxDBClient;
+        this.config = config;
     }
 
     public void save(WeatherMeasurement measurement) {
@@ -30,8 +33,8 @@ public class WeatherRepository {
     }
 
     public void delete(WeatherMeasurement measurement) {
-        String bucket = "Development";
-        String org = "Development";
+        String bucket = config.getBucket();
+        String org = config.getOrg();
         String predicate = "_measurement = \"weather\" and cityID = \"" + measurement.getCityID() + "\"";
         OffsetDateTime startTime = measurement.getTimestamp().atOffset(ZoneOffset.UTC);
         OffsetDateTime endTime = startTime.plusNanos(1);
@@ -41,7 +44,7 @@ public class WeatherRepository {
     }
 
     public Optional<WeatherMeasurement> findMeasurementForCityByTimestamp(UUID cityId, Instant timestamp) {
-        String query = "from(bucket: \"Development\")" +
+        String query = "from(bucket: \"" + config.getBucket() + "\")" +
                 "  |> range(start: " + timestamp + ", stop: " + timestamp.plusNanos(1) + ")" +
                 "  |> filter(fn: (r) => r[\"_measurement\"] == \"weather\")" +
                 "  |> filter(fn: (r) => r[\"_field\"] == \"humidity\" or r[\"_field\"] == \"pressure\" or r[\"_field\"] == \"temperature\")" +
@@ -58,7 +61,7 @@ public class WeatherRepository {
     }
 
     public Optional<WeatherMeasurement> findLastMeasurementForCity(UUID cityId) {
-        String query = "from(bucket: \"Development\") " +
+        String query = "from(bucket: \"" + config.getBucket() + "\") " +
                 "|> range(start: -1d) " +
                 "|> filter(fn: (r) => r._measurement == \"weather\" and r.cityID == \"" + cityId + "\" )" +
                 "|> filter(fn: (r) => r._field == \"humidity\" or r._field == \"temperature\" or r._field == \"pressure\")" +
@@ -87,7 +90,7 @@ public class WeatherRepository {
     }
 
     private Optional<WeatherMeasurement> findPeriodAverageForCity(String period, UUID cityId) {
-        String query = "from(bucket: \"Development\") " +
+        String query = "from(bucket: \"" + config.getBucket() + "\") " +
                 "|> range(start: -" + period + ") " +
                 "|> filter(fn: (r) => r._measurement == \"weather\" and r.cityID == \"" + cityId + "\" )" +
                 "|> filter(fn: (r) => r._field == \"humidity\" or r._field == \"temperature\" or r._field == \"pressure\")" +
@@ -115,8 +118,8 @@ public class WeatherRepository {
         WeatherMeasurement measurement = new WeatherMeasurement();
         measurement.setCityID(cityId);
         measurement.setTimestamp(timestamp);
-        measurement.setHumidity(temperature);
-        measurement.setTemperature(humidity);
+        measurement.setTemperature(temperature);
+        measurement.setHumidity(humidity);
         measurement.setPressure(pressure);
 
         return Optional.of(measurement);
