@@ -3,10 +3,8 @@ package ppj.meteorolog.weather;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.WritePrecision;
-import netscape.javascript.JSObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Profile;
@@ -24,25 +22,18 @@ import java.time.Instant;
 @Profile("!test")
 public class WeatherMonitor {
 
-    @Value("${openWeatherApi.url.weather.current}")
-    private String url;
-
-    @Value("${openWeatherApi.key}")
-    private String apiKey;
-
-    @Value("${openWaetherApi.callsLimitPerMinute}")
-    private int apiLimit;
-
+    private final WeatherConfig config;
     private final InfluxDBClient influxDBClient;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final CityRepository cityRepository;
 
-    public WeatherMonitor(InfluxDBClient influxDBClient, CityRepository cityRepository) {
+    public WeatherMonitor(WeatherConfig config, InfluxDBClient influxDBClient, CityRepository cityRepository) {
+        this.config = config;
         this.influxDBClient = influxDBClient;
         this.cityRepository = cityRepository;
     }
 
-    @Scheduled(fixedRateString = "${openWeatherApi.downloadRate}")
+    @Scheduled(fixedRateString = "${weather.downloadRate}")
     @BlockInReadOnlyMode
     public void updateWeather() {
         Iterable<City> cities = cityRepository.findAll();
@@ -54,10 +45,10 @@ public class WeatherMonitor {
     }
 
     private Mono<String> requestWeatherDataForCity(City city) {
-        String requestUrl = this.url
+        String requestUrl = config.getDownloadUrl()
                 .replace("{city name}", city.getName())
                 .replace("{country code}", city.getCountry().getCode())
-                .replace("{API key}", apiKey);
+                .replace("{API key}", config.getApiKey());
 
         return WebClient.create()
                 .get()
@@ -88,7 +79,7 @@ public class WeatherMonitor {
             log.info("New measurement logged for city：" + city.getName());
 
         } catch (JSONException e) {
-            log.warn("Unable to parse JSON to WeatherMeasurement for city: " + city.getName(), e);
+            log.error("Unable to parse JSON to WeatherMeasurement for city: " + city.getName(), e);
         }
     }
 }

@@ -43,6 +43,9 @@ public class CityService {
     }
 
     public Result<String> createCity(City city) {
+        if(cityRepository.count() >= 60)
+            return Result.failure("Cannot create more than 60 cities");
+
         String cityName = city.getName();
         String countryCode = city.getCountry().getCode();
 
