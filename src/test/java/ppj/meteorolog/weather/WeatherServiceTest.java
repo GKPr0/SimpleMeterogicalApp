@@ -198,9 +198,9 @@ public class WeatherServiceTest {
 
         WeatherMeasurement weatherMeasurement = new WeatherMeasurement();
         weatherMeasurement.setCityID(city.get().getId());
-        weatherMeasurement.setTemperature(666);
-        weatherMeasurement.setPressure(1010);
-        weatherMeasurement.setHumidity(79);
+        weatherMeasurement.setTemperature(666.0);
+        weatherMeasurement.setPressure(1010.0);
+        weatherMeasurement.setHumidity(79.0);
         weatherMeasurement.setTimestamp(Instant.now());
 
         Result<String> addResult = weatherService.addWeatherMeasurementRecord(weatherMeasurement);
@@ -208,18 +208,18 @@ public class WeatherServiceTest {
 
         Result<WeatherMeasurement> getResult = weatherService.getCurrentWeatherForCity("CZ","Liberec");
         assertTrue(getResult.getIsSuccess());
-        assertEquals(666, getResult.getValue().getTemperature());
-        assertEquals(1010, getResult.getValue().getPressure());
-        assertEquals(79, getResult.getValue().getHumidity());
+        assertEquals(666.0, getResult.getValue().getTemperature());
+        assertEquals(1010.0, getResult.getValue().getPressure());
+        assertEquals(79.0, getResult.getValue().getHumidity());
     }
 
     @Test
     public void testAddWeatherMeasurementForNonExistentCity() {
         WeatherMeasurement weatherMeasurement = new WeatherMeasurement();
         weatherMeasurement.setCityID(UUID.randomUUID());
-        weatherMeasurement.setTemperature(666);
-        weatherMeasurement.setPressure(1010);
-        weatherMeasurement.setHumidity(79);
+        weatherMeasurement.setTemperature(666.0);
+        weatherMeasurement.setPressure(1010.0);
+        weatherMeasurement.setHumidity(79.0);
         weatherMeasurement.setTimestamp(Instant.now());
 
         Result<String> addResult = weatherService.addWeatherMeasurementRecord(weatherMeasurement);
@@ -234,17 +234,17 @@ public class WeatherServiceTest {
 
         WeatherMeasurement weatherMeasurement = new WeatherMeasurement();
         weatherMeasurement.setCityID(city.get().getId());
-        weatherMeasurement.setTemperature(666);
-        weatherMeasurement.setPressure(1010);
-        weatherMeasurement.setHumidity(79);
+        weatherMeasurement.setTemperature(666.0);
+        weatherMeasurement.setPressure(1010.0);
+        weatherMeasurement.setHumidity(79.0);
         weatherMeasurement.setTimestamp(Instant.now());
 
         Result<String> addResult = weatherService.addWeatherMeasurementRecord(weatherMeasurement);
         assertTrue(addResult.getIsSuccess());
 
-        weatherMeasurement.setHumidity(1000);
-        weatherMeasurement.setTemperature(30);
-        weatherMeasurement.setPressure(1000);
+        weatherMeasurement.setHumidity(1000.0);
+        weatherMeasurement.setTemperature(30.0);
+        weatherMeasurement.setPressure(1000.0);
 
         Result<String> addResult2 = weatherService.addWeatherMeasurementRecord(weatherMeasurement);
         assertFalse(addResult2.getIsSuccess());
@@ -258,9 +258,9 @@ public class WeatherServiceTest {
 
         WeatherMeasurement weatherMeasurement = new WeatherMeasurement();
         weatherMeasurement.setCityID(city.get().getId());
-        weatherMeasurement.setTemperature(666);
-        weatherMeasurement.setPressure(1010);
-        weatherMeasurement.setHumidity(79);
+        weatherMeasurement.setTemperature(666.0);
+        weatherMeasurement.setPressure(1010.0);
+        weatherMeasurement.setHumidity(79.0);
         weatherMeasurement.setTimestamp(Instant.now().minusSeconds(dbConfig.getRetentionPeriod() + 1));
 
         Result<String> addResult = weatherService.addWeatherMeasurementRecord(weatherMeasurement);
@@ -277,9 +277,9 @@ public class WeatherServiceTest {
 
         WeatherMeasurement weatherMeasurement = new WeatherMeasurement();
         weatherMeasurement.setCityID(city.get().getId());
-        weatherMeasurement.setTemperature(666);
-        weatherMeasurement.setPressure(1010);
-        weatherMeasurement.setHumidity(79);
+        weatherMeasurement.setTemperature(666.0);
+        weatherMeasurement.setPressure(1010.0);
+        weatherMeasurement.setHumidity(79.0);
         weatherMeasurement.setTimestamp(timestamp);
 
         Result<String> addResult = weatherService.addWeatherMeasurementRecord(weatherMeasurement);

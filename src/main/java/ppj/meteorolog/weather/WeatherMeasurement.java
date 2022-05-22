@@ -2,10 +2,13 @@ package ppj.meteorolog.weather;
 
 import com.influxdb.annotations.Column;
 import com.influxdb.annotations.Measurement;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -13,19 +16,27 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class WeatherMeasurement {
     @Column(timestamp = true)
+    @NotNull
     private Instant timestamp;
 
     @Column(tag = true)
+    @NotNull
     private UUID cityID;
 
     @Column
-    private double temperature;
+    @NotNull
+    private Double temperature;
 
     @Column
+    @NotNull
+    @Positive
     private double humidity;
 
     @Column
+    @NotNull
+    @Positive
     private double pressure;
 }
