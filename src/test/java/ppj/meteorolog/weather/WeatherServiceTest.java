@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import ppj.meteorolog.city.City;
 import ppj.meteorolog.city.CityRepository;
+import ppj.meteorolog.db.InfluxDbConfig;
 import ppj.meteorolog.shared.Result;
 
 import java.time.Instant;
@@ -31,6 +32,9 @@ public class WeatherServiceTest {
 
     @Autowired
     private WeatherRepository weatherRepository;
+
+    @Autowired
+    private InfluxDbConfig dbConfig;
 
     @BeforeEach
     public void setup() {
@@ -245,6 +249,23 @@ public class WeatherServiceTest {
         Result<String> addResult2 = weatherService.addWeatherMeasurementRecord(weatherMeasurement);
         assertFalse(addResult2.getIsSuccess());
         assertEquals("Measurement for city already exists", addResult2.getError());
+    }
+
+    @Test
+    public void testAddWeatherMeasurementForCityOlderThenRetentionPeriod(){
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("Liberec", "CZ");
+        assertTrue(city.isPresent());
+
+        WeatherMeasurement weatherMeasurement = new WeatherMeasurement();
+        weatherMeasurement.setCityID(city.get().getId());
+        weatherMeasurement.setTemperature(666);
+        weatherMeasurement.setPressure(1010);
+        weatherMeasurement.setHumidity(79);
+        weatherMeasurement.setTimestamp(Instant.now().minusSeconds(dbConfig.getRetentionPeriod() + 1));
+
+        Result<String> addResult = weatherService.addWeatherMeasurementRecord(weatherMeasurement);
+        assertFalse(addResult.getIsSuccess());
+        assertEquals("Measurement is too old", addResult.getError());
     }
 
     @Test

@@ -3,6 +3,7 @@ package ppj.meteorolog.weather;
 import org.springframework.stereotype.Service;
 import ppj.meteorolog.city.City;
 import ppj.meteorolog.city.CityRepository;
+import ppj.meteorolog.db.InfluxDbConfig;
 import ppj.meteorolog.shared.Result;
 
 import java.time.Instant;
@@ -16,10 +17,12 @@ public class WeatherService {
 
     private final CityRepository cityRepository;
     private final WeatherRepository weatherRepository;
+    private final InfluxDbConfig influxDbConfig;
 
-    public WeatherService(CityRepository cityRepository, WeatherRepository weatherRepository) {
+    public WeatherService(CityRepository cityRepository, WeatherRepository weatherRepository, InfluxDbConfig influxDbConfig) {
         this.cityRepository = cityRepository;
         this.weatherRepository = weatherRepository;
+        this.influxDbConfig = influxDbConfig;
     }
 
     public Result<WeatherMeasurement> getCurrentWeatherForCity(String countryCode, String cityName) {
@@ -56,6 +59,10 @@ public class WeatherService {
     }
 
     public Result<String> addWeatherMeasurementRecord(WeatherMeasurement weather) {
+        Instant maxMeasurementOldness = Instant.now().minusSeconds(influxDbConfig.getRetentionPeriod());
+        if(weather.getTimestamp().isBefore(maxMeasurementOldness))
+            return Result.failure("Measurement is too old");
+
         UUID cityId = weather.getCityID();
         Optional<City> optionalCity = cityRepository.findById(cityId);
 
