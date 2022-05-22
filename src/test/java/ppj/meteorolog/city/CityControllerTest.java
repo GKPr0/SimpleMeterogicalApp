@@ -13,7 +13,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import ppj.meteorolog.Application;
 import ppj.meteorolog.country.Country;
-
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;

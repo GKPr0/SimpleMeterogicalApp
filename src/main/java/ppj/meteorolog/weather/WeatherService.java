@@ -6,11 +6,16 @@ import ppj.meteorolog.city.CityRepository;
 import ppj.meteorolog.db.InfluxDbConfig;
 import ppj.meteorolog.shared.Result;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Writer;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+
+import static ppj.meteorolog.weather.WeatherCsvHelper.PrintToCsvWriter;
 
 @Service
 public class WeatherService {
@@ -104,5 +109,18 @@ public class WeatherService {
         } catch (DateTimeParseException e) {
             return Result.failure("Invalid timestamp");
         }
+    }
+
+    public Result<String> writeWeatherMeasurementsForCityToCsv(String countryCode, String cityName, Writer writer) throws IOException {
+        Optional<City> optionalCity = cityRepository.findCityByNameAndCountry_Code(cityName, countryCode);
+
+        if (optionalCity.isEmpty())
+            return null;
+
+        UUID cityId = optionalCity.get().getId();
+        Iterable<WeatherMeasurement> measurements = weatherRepository.findAllMeasurementsForCity(cityId);
+
+        PrintToCsvWriter(writer, measurements);
+        return Result.success("Measurements written to CSV");
     }
 }

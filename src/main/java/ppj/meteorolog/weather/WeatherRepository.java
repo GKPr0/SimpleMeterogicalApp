@@ -1,5 +1,6 @@
 package ppj.meteorolog.weather;
 
+import com.fasterxml.jackson.databind.util.ArrayIterator;
 import com.influxdb.client.DeleteApi;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.WriteApiBlocking;
@@ -12,6 +13,7 @@ import ppj.meteorolog.db.InfluxDbConfig;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,6 +43,30 @@ public class WeatherRepository {
 
         DeleteApi deleteApi = influxDBClient.getDeleteApi();
         deleteApi.delete(startTime, endTime, predicate, bucket, org);
+    }
+
+    public Iterable<WeatherMeasurement> findAllMeasurementsForCity(UUID cityId) {
+        String query = "from(bucket: \"" + config.getBucket() + "\")" +
+                "  |> range(start:0)" +
+                "  |> filter(fn: (r) => r[\"_measurement\"] == \"weather\")" +
+                "  |> filter(fn: (r) => r[\"_field\"] == \"humidity\" or r[\"_field\"] == \"pressure\" or r[\"_field\"] == \"temperature\")" +
+                "  |> filter(fn: (r) => r[\"cityID\"] == \"" + cityId + "\")" +
+                "  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")";
+
+        List<FluxTable> tables = influxDBClient.getQueryApi().query(query);
+        if(tables.size() == 0)
+            return List.of();
+
+        List<WeatherMeasurement> measurements = new ArrayList<>();
+        for (FluxTable table : tables) {
+            Iterable<FluxRecord> records = table.getRecords();
+            for(FluxRecord record : records) {
+                Optional<WeatherMeasurement> measurement = mapFluxRecordToWeatherMeasurement(record, cityId);
+                measurement.ifPresent(measurements::add);
+            }
+        }
+
+        return measurements;
     }
 
     public Optional<WeatherMeasurement> findMeasurementForCityByTimestamp(UUID cityId, Instant timestamp) {
