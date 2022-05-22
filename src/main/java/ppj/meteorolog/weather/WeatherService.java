@@ -6,16 +6,14 @@ import ppj.meteorolog.city.CityRepository;
 import ppj.meteorolog.db.InfluxDbConfig;
 import ppj.meteorolog.shared.Result;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-
-import static ppj.meteorolog.weather.WeatherCsvHelper.PrintToCsvWriter;
 
 @Service
 public class WeatherService {
@@ -120,7 +118,24 @@ public class WeatherService {
         UUID cityId = optionalCity.get().getId();
         Iterable<WeatherMeasurement> measurements = weatherRepository.findAllMeasurementsForCity(cityId);
 
-        PrintToCsvWriter(writer, measurements);
+        WeatherCsvHelper.PrintToWriter(writer, measurements);
         return Result.success("Measurements written to CSV");
+    }
+
+    public Result<String> importWeatherMeasurementsForCityFromCsv(String countryCode, String cityName, Reader reader) throws IOException {
+        Optional<City> optionalCity = cityRepository.findCityByNameAndCountry_Code(cityName, countryCode);
+
+        if (optionalCity.isEmpty())
+            return null;
+
+        UUID cityId = optionalCity.get().getId();
+        Iterable<WeatherMeasurement> measurements = WeatherCsvHelper.ParseFromReader(reader);
+
+        for(WeatherMeasurement measurement : measurements) {
+            measurement.setCityID(cityId);
+            weatherRepository.save(measurement);
+        }
+
+        return Result.success("Measurements added");
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ppj.meteorolog.shared.BaseApiController;
 import ppj.meteorolog.shared.BlockInReadOnlyMode;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -52,7 +53,12 @@ public class WeatherController extends BaseApiController {
         return HandleResult(weatherService.deleteWeatherMeasurementRecord(countryCode, cityName, timestamp));
     }
 
-    @RequestMapping(path = "export/{countryCode}/{cityName}")
+    @PostMapping(path = "/import/{countryCode}/{cityName}")
+    public ResponseEntity<?> importWeatherMeasurementsForCityFromCsv(@PathVariable String countryCode, @PathVariable String cityName, HttpServletRequest request) throws IOException {
+        return HandleResult(weatherService.importWeatherMeasurementsForCityFromCsv(countryCode, cityName, request.getReader()));
+    }
+
+    @GetMapping(path = "/export/{countryCode}/{cityName}")
     public void getAllWeatherMeasurementsForCityInCsv(@PathVariable String countryCode, @PathVariable String cityName, HttpServletResponse response) throws IOException {
         response.setContentType("text/csv");
         response.setHeader(
@@ -62,5 +68,4 @@ public class WeatherController extends BaseApiController {
         ResponseEntity<?> responseEntity = HandleResult(weatherService.writeWeatherMeasurementsForCityToCsv(countryCode, cityName, response.getWriter()));
         response.setStatus(responseEntity.getStatusCodeValue());
     }
-
 }
