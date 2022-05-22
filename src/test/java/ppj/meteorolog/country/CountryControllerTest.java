@@ -226,12 +226,12 @@ public class CountryControllerTest {
         cityRepository.saveAll(List.of(city1, city2 ));
 
         Iterable<City> cities = cityRepository.findCitiesByCountry_Code("CZ");
-        assertEquals(cities.spliterator().getExactSizeIfKnown(), 2);
+        assertEquals(2, cities.spliterator().getExactSizeIfKnown());
 
         mvc.perform(delete("/api/v1/country/CZ"))
             .andExpect(status().isOk());
 
         Iterable<City> deletedCities = cityRepository.findCitiesByCountry_Code("CZ");
-        assertEquals(deletedCities.spliterator().getExactSizeIfKnown(), 0);
+        assertEquals(0, deletedCities.spliterator().getExactSizeIfKnown());
     }
 }

@@ -36,7 +36,7 @@ public class CityServiceTest {
         Result<Iterable<City>> getResult = cityService.getAllCities();
 
         assertTrue(getResult.getIsSuccess());
-        assertEquals(getResult.getValue().spliterator().getExactSizeIfKnown(),9);
+        assertEquals(9, getResult.getValue().spliterator().getExactSizeIfKnown());
     }
 
     @Test
@@ -44,7 +44,7 @@ public class CityServiceTest {
         Result<Iterable<City>> getResult = cityService.getAllCitiesInCountry("CZ");
 
         assertTrue(getResult.getIsSuccess());
-        assertEquals(getResult.getValue().spliterator().getExactSizeIfKnown(),2);
+        assertEquals(2, getResult.getValue().spliterator().getExactSizeIfKnown());
     }
 
     @Test
@@ -59,8 +59,8 @@ public class CityServiceTest {
         Result<City> getResult = cityService.getCity("CZ", "Prague");
 
         assertTrue(getResult.getIsSuccess());
-        assertEquals(getResult.getValue().getName(),"Prague");
-        assertEquals(getResult.getValue().getCountry().getCode(),"CZ");
+        assertEquals("Prague", getResult.getValue().getName());
+        assertEquals("CZ", getResult.getValue().getCountry().getCode());
     }
 
     @Test
@@ -87,8 +87,8 @@ public class CityServiceTest {
 
         Result<City> getResult = cityService.getCity("CZ", "Brno");
         assertTrue(getResult.getIsSuccess());
-        assertEquals(getResult.getValue().getName(),"Brno");
-        assertEquals(getResult.getValue().getCountry().getCode(),"CZ");
+        assertEquals("Brno", getResult.getValue().getName());
+        assertEquals("CZ", getResult.getValue().getCountry().getCode());
     }
 
     @Test
@@ -98,7 +98,7 @@ public class CityServiceTest {
 
         Result<?> createResult = cityService.createCity(city);
         assertFalse(createResult.getIsSuccess());
-        assertEquals(createResult.getError(),"City with name Prague already exists in country CZ");
+        assertEquals("City with name Prague already exists in country CZ", createResult.getError());
     }
 
     @Test
@@ -108,7 +108,7 @@ public class CityServiceTest {
 
         Result<?> createResult = cityService.createCity(city);
         assertFalse(createResult.getIsSuccess());
-        assertEquals(createResult.getError(),"Cannot add city to non existent country Cze");
+        assertEquals("Cannot add city to non existent country Cze", createResult.getError());
     }
 
     @Test
@@ -126,7 +126,7 @@ public class CityServiceTest {
         City city = new City("Liberec", country);
         Result<?> createResult = cityService.createCity(city);
         assertFalse(createResult.getIsSuccess());
-        assertEquals(createResult.getError(),"Cannot create more than 60 cities");
+        assertEquals("Cannot create more than 60 cities", createResult.getError());
     }
 
     @Test
@@ -139,7 +139,7 @@ public class CityServiceTest {
 
         Result<City> getResult = cityService.getCity("CZ", "Liberec (updated)");
         assertTrue(getResult.getIsSuccess());
-        assertEquals(getResult.getValue().getName(),"Liberec (updated)");
+        assertEquals("Liberec (updated)", getResult.getValue().getName());
     }
 
     @Test
@@ -152,8 +152,8 @@ public class CityServiceTest {
 
         Result<City> getResult = cityService.getCity("UK", "Liberec");
         assertTrue(getResult.getIsSuccess());
-        assertEquals(getResult.getValue().getName(),"Liberec");
-        assertEquals(getResult.getValue().getCountry().getCode(),"UK");
+        assertEquals("Liberec", getResult.getValue().getName());
+        assertEquals("UK", getResult.getValue().getCountry().getCode());
     }
 
     @Test
@@ -172,7 +172,7 @@ public class CityServiceTest {
 
         Result<?> updateResult = cityService.updateCity("CZ", "Liberec", city);
         assertFalse(updateResult.getIsSuccess());
-        assertEquals(updateResult.getError(),"Cannot move city to non existent country Cze");
+        assertEquals("Cannot move city to non existent country Cze", updateResult.getError());
     }
 
     @Test
@@ -182,7 +182,7 @@ public class CityServiceTest {
 
         Result<?> updateResult = cityService.updateCity("CZ", "Prague", city);
         assertFalse(updateResult.getIsSuccess());
-        assertEquals(updateResult.getError(),"City with name Liberec already exists in country CZ");
+        assertEquals("City with name Liberec already exists in country CZ", updateResult.getError());
     }
 
     @Test

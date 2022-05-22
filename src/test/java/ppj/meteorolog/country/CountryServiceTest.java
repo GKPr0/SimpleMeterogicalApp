@@ -63,8 +63,8 @@ public class CountryServiceTest {
 
         Result<Country> getResult = countryService.getCountry("DE");
         assertTrue(getResult.getIsSuccess());
-        assertEquals(getResult.getValue().getName(),"Germany");
-        assertEquals(getResult.getValue().getCode(),"DE");
+        assertEquals("Germany", getResult.getValue().getName());
+        assertEquals("DE", getResult.getValue().getCode());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class CountryServiceTest {
 
         Result<?> createResult = countryService.createCountry(countryToCreate);
         assertFalse(createResult.getIsSuccess());
-        assertEquals(createResult.getError(),"Country with code CZ already exists");
+        assertEquals("Country with code CZ already exists", createResult.getError());
     }
 
     @Test
@@ -85,8 +85,8 @@ public class CountryServiceTest {
 
         Result<Country> getResult = countryService.getCountry("CZ");
         assertTrue(getResult.getIsSuccess());
-        assertEquals(getResult.getValue().getName(),"Czech Republic (updated)");
-        assertEquals(getResult.getValue().getCode(),"CZ");
+        assertEquals("Czech Republic (updated)", getResult.getValue().getName());
+        assertEquals("CZ", getResult.getValue().getCode());
     }
 
     @Test
