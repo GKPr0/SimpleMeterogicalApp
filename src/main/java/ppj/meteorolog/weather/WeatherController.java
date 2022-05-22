@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 @RestController
 @RequestMapping(path = "api/v1/weather")
@@ -65,7 +64,7 @@ public class WeatherController extends BaseApiController {
                 "Content-Disposition",
                 "attachment; filename=\"weather_" + countryCode + "_" + cityName + ".csv\"");
 
-        ResponseEntity<?> responseEntity = HandleResult(weatherService.writeWeatherMeasurementsForCityToCsv(countryCode, cityName, response.getWriter()));
+        ResponseEntity<?> responseEntity = HandleResult(weatherService.exportWeatherMeasurementsForCityToCsv(countryCode, cityName, response.getWriter()));
         response.setStatus(responseEntity.getStatusCodeValue());
     }
 }

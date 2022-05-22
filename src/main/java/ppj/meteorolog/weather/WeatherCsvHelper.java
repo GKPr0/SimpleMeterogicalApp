@@ -16,7 +16,7 @@ import java.util.List;
 
 public class WeatherCsvHelper {
 
-    public static void PrintToWriter(Writer writer, Iterable<WeatherMeasurement> measurements) throws IOException {
+    public static void printToWriter(Writer writer, Iterable<WeatherMeasurement> measurements) throws IOException {
         CSVPrinter printer = new CSVPrinter(writer,
                 CSVFormat.DEFAULT.withHeader("Timestamp", "Temperature", "Pressure", "Humidity"));
 
@@ -29,7 +29,7 @@ public class WeatherCsvHelper {
         }
     }
 
-    public static Iterable<WeatherMeasurement> ParseFromReader(Reader reader) throws IOException {
+    public static Iterable<WeatherMeasurement> parseFromReader(Reader reader) throws IOException {
         List<WeatherMeasurement> measurements = new ArrayList<>();
         CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
 

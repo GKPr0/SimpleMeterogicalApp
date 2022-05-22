@@ -24,9 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
@@ -459,5 +457,117 @@ public class WeatherControllerTest {
 
         mvc.perform(delete("/api/v1/weather/CZ/Liberec/invalidTimestamp"))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testExportWeatherMeasurements_thenStatus200() throws Exception {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        UUID cityId = city.get().getId();
+        Instant timestamp = Instant.now();
+
+        weatherRepository.save(new WeatherMeasurement(timestamp, cityId, 20.0, 80.0, 1000.0));
+
+        mvc.perform(get("/api/v1/weather/export/UK/London"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("text/csv"))
+            .andExpect(header().string("Content-Disposition", "attachment; filename=\"weather_UK_London.csv\""))
+            .andExpect(content().string(
+                    "Timestamp,Temperature,Pressure,Humidity\r\n" +
+                    timestamp.toString() + ",20.0,1000.0,80.0\r\n"));
+    }
+
+    @Test
+    public void testExportWeatherMeasurementsForCityWithEmptyCsv_thenStatus200() throws Exception {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        mvc.perform(get("/api/v1/weather/export/UK/London"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/csv"))
+                .andExpect(header().string("Content-Disposition", "attachment; filename=\"weather_UK_London.csv\""))
+                .andExpect(content().string("Timestamp,Temperature,Pressure,Humidity\r\n"));
+    }
+
+    @Test
+    public void testExportWeatherMeasurementsForNonExistentCity_thenStatus404() throws Exception {
+        mvc.perform(get("/api/v1/weather/export/UK/NonExistentCity"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testExportWeatherMeasurementsForNonExistentCountry_thenStatus404() throws Exception {
+        mvc.perform(get("/api/v1/weather/export/NonExistentCountry/London"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testImportWeatherMeasurement_thenStatus200() throws Exception {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        UUID cityId = city.get().getId();
+        Instant timestamp = Instant.now();
+
+        mvc.perform(post("/api/v1/weather/import/UK/London")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("Timestamp,Temperature,Pressure,Humidity\n" +
+                        timestamp.toString() + ",20.0,1000.0,80.0\n"))
+            .andExpect(status().isOk());
+
+        Optional<WeatherMeasurement> importedMeasurement = weatherRepository.findMeasurementForCityByTimestamp(cityId, timestamp);
+        assertTrue(importedMeasurement.isPresent());
+        assertEquals(20.0, importedMeasurement.get().getTemperature());
+        assertEquals(1000.0, importedMeasurement.get().getPressure());
+        assertEquals(80.0, importedMeasurement.get().getHumidity());
+    }
+
+    @Test
+    public void testImportWeatherMeasurementForNonExistentCity_thenStatus404() throws Exception {
+        mvc.perform(post("/api/v1/weather/import/UK/NonExistentCity")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("Timestamp,Temperature,Pressure,Humidity\n" +
+                        Instant.now().toString() + ",20.0,1000.0,80.0\n"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testImportWeatherMeasurementForNonExistentCountry_thenStatus404() throws Exception {
+        mvc.perform(post("/api/v1/weather/import/NonExistentCountry/London")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("Timestamp,Temperature,Pressure,Humidity\n" +
+                        Instant.now().toString() + ",20.0,1000.0,80.0\n"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testImportWeatherMeasurementWithInvalidHeader_thenStatus400() throws Exception {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        Instant timestamp = Instant.now();
+
+        mvc.perform(post("/api/v1/weather/import/UK/London")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("Timestamp,TEMPERATURETURE,Pressure,Humidity\n" +
+                        timestamp.toString() + ",20.0,1000.0,80.0\n"))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string("Unable to parse CSV"));
+    }
+
+    @Test
+    public void testImportWeatherMeasurementWithInvalidData_thenStatus400() throws Exception {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        Instant timestamp = Instant.now();
+
+        mvc.perform(post("/api/v1/weather/import/UK/London")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("Timestamp,Temperature,Pressure,Humidity\n" +
+                        timestamp.toString() + ",twenty,1000.0,80.0\n"))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string("Unable to parse CSV"));
     }
 }

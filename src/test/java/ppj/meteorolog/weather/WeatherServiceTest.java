@@ -11,6 +11,7 @@ import ppj.meteorolog.city.CityRepository;
 import ppj.meteorolog.db.InfluxDbConfig;
 import ppj.meteorolog.shared.Result;
 
+import java.io.*;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -327,5 +328,142 @@ public class WeatherServiceTest {
         Result<String> deleteResult = weatherService.deleteWeatherMeasurementRecord("CZ", "Liberec", "InvalidTimestamp");
         assertFalse(deleteResult.getIsSuccess());
         assertEquals("Invalid timestamp", deleteResult.getError());
+    }
+
+    @Test
+    public void testExportWeatherMeasurements() throws IOException {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        UUID cityId = city.get().getId();
+        Instant timestamp = Instant.now();
+
+        weatherRepository.save(new WeatherMeasurement(timestamp, cityId, 20.0, 80.0, 1000.0));
+
+        Writer writer = new StringWriter();
+        Result<String> exportResult = weatherService.exportWeatherMeasurementsForCityToCsv("UK", "London", writer);
+        assertTrue(exportResult.getIsSuccess());
+
+        String csv = writer.toString();
+        assertEquals("Timestamp,Temperature,Pressure,Humidity\r\n" +
+                timestamp.toString() + ",20.0,1000.0,80.0\r\n", csv);
+    }
+
+    @Test
+    public void testExportWeatherMeasurementsForNonExistentCity() throws IOException {
+        Writer writer = new StringWriter();
+        Result<String> exportResult = weatherService.exportWeatherMeasurementsForCityToCsv("UK", "NonExistentCity", writer);
+        assertNull(exportResult);
+    }
+
+    @Test
+    public void testExportWeatherMeasurementsForNonExistentCountry() throws IOException {
+        Writer writer = new StringWriter();
+        Result<String> exportResult = weatherService.exportWeatherMeasurementsForCityToCsv("NonExistentCountry", "London", writer);
+        assertNull(exportResult);
+    }
+
+    @Test
+    public void testExportWeatherMeasurementsForCityWithEmptyCsv() throws IOException {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        Writer writer = new StringWriter();
+        Result<String> exportResult = weatherService.exportWeatherMeasurementsForCityToCsv("UK", "London", writer);
+        assertTrue(exportResult.getIsSuccess());
+
+        String csv = writer.toString();
+        assertEquals("Timestamp,Temperature,Pressure,Humidity\r\n", csv);
+    }
+
+    @Test
+    public void testImportWeatherMeasurements() throws IOException {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        UUID cityId = city.get().getId();
+        Instant timestamp = Instant.now();
+
+        String csv = "Timestamp,Temperature,Pressure,Humidity\r\n" +
+                timestamp.toString() + ",20.0,1000.0,80.0\r\n";
+
+        Reader reader = new StringReader(csv);
+
+        Result<String> importResult = weatherService.importWeatherMeasurementsForCityFromCsv("UK", "London", reader);
+        assertTrue(importResult.getIsSuccess());
+
+        Optional<WeatherMeasurement> weatherMeasurement = weatherRepository.findMeasurementForCityByTimestamp(cityId, timestamp);
+        assertTrue(weatherMeasurement.isPresent());
+        assertEquals(20.0, weatherMeasurement.get().getTemperature());
+        assertEquals(1000.0, weatherMeasurement.get().getPressure());
+        assertEquals(80.0, weatherMeasurement.get().getHumidity());
+    }
+
+    @Test
+    public void testImportWeatherMeasurementsForNonExistentCity() throws IOException {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        Instant timestamp = Instant.now();
+
+        String csv = "Timestamp,Temperature,Pressure,Humidity\r\n" +
+                timestamp.toString() + ",20.0,1000.0,80.0\r\n";
+
+        Reader reader = new StringReader(csv);
+
+        Result<String> importResult = weatherService.importWeatherMeasurementsForCityFromCsv("UK", "NonExistentCity", reader);
+        assertNull(importResult);
+    }
+
+    @Test
+    public void testImportWeatherMeasurementsForNonExistentCountry() throws IOException {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        Instant timestamp = Instant.now();
+
+        String csv = "Timestamp,Temperature,Pressure,Humidity\r\n" +
+                timestamp.toString() + ",20.0,1000.0,80.0\r\n";
+
+        Reader reader = new StringReader(csv);
+
+        Result<String> importResult = weatherService.importWeatherMeasurementsForCityFromCsv("NonExistentCountry", "London", reader);
+        assertNull(importResult);
+    }
+
+    @Test
+    public void testImportWeatherMeasurementWithInvalidHeader() throws IOException {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        UUID cityId = city.get().getId();
+        Instant timestamp = Instant.now();
+
+        String csv = "Timestamp,TEMPERATURETURE,Pressure,Humidity\r\n" +
+                timestamp.toString() + ",20.0,1000.0,80.0\r\n";
+
+        Reader reader = new StringReader(csv);
+
+        Result<String> importResult = weatherService.importWeatherMeasurementsForCityFromCsv("UK", "London", reader);
+        assertFalse(importResult.getIsSuccess());
+        assertEquals("Unable to parse CSV", importResult.getError());
+    }
+
+    @Test
+    public void testImportWeatherMeasurementWithInvalidData() throws IOException {
+        Optional<City> city = cityRepository.findCityByNameAndCountry_Code("London", "UK");
+        assertTrue(city.isPresent());
+
+        UUID cityId = city.get().getId();
+        Instant timestamp = Instant.now();
+
+        String csv = "Timestamp,Temperature,Pressure,Humidity\r\n" +
+                timestamp.toString() + ",hello,1000.0,80.0\r\n";
+
+        Reader reader = new StringReader(csv);
+
+        Result<String> importResult = weatherService.importWeatherMeasurementsForCityFromCsv("UK", "London", reader);
+        assertFalse(importResult.getIsSuccess());
+        assertEquals("Unable to parse CSV", importResult.getError());
     }
 }

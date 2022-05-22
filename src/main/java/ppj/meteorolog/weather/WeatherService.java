@@ -62,8 +62,7 @@ public class WeatherService {
     }
 
     public Result<String> addWeatherMeasurementRecord(WeatherMeasurement weather) {
-        Instant maxMeasurementOldness = Instant.now().minusSeconds(influxDbConfig.getRetentionPeriod());
-        if(weather.getTimestamp().isBefore(maxMeasurementOldness))
+        if(measurementIsTooOld(weather))
             return Result.failure("Measurement is too old");
 
         UUID cityId = weather.getCityID();
@@ -109,7 +108,7 @@ public class WeatherService {
         }
     }
 
-    public Result<String> writeWeatherMeasurementsForCityToCsv(String countryCode, String cityName, Writer writer) throws IOException {
+    public Result<String> exportWeatherMeasurementsForCityToCsv(String countryCode, String cityName, Writer writer) throws IOException {
         Optional<City> optionalCity = cityRepository.findCityByNameAndCountry_Code(cityName, countryCode);
 
         if (optionalCity.isEmpty())
@@ -118,7 +117,7 @@ public class WeatherService {
         UUID cityId = optionalCity.get().getId();
         Iterable<WeatherMeasurement> measurements = weatherRepository.findAllMeasurementsForCity(cityId);
 
-        WeatherCsvHelper.PrintToWriter(writer, measurements);
+        WeatherCsvHelper.printToWriter(writer, measurements);
         return Result.success("Measurements written to CSV");
     }
 
@@ -129,13 +128,26 @@ public class WeatherService {
             return null;
 
         UUID cityId = optionalCity.get().getId();
-        Iterable<WeatherMeasurement> measurements = WeatherCsvHelper.ParseFromReader(reader);
+
+        Iterable<WeatherMeasurement> measurements;
+        try {
+            measurements = WeatherCsvHelper.parseFromReader(reader);
+        } catch (IllegalArgumentException e) {
+            return Result.failure("Unable to parse CSV");
+        }
 
         for(WeatherMeasurement measurement : measurements) {
+            if(measurementIsTooOld(measurement))
+                continue;
             measurement.setCityID(cityId);
             weatherRepository.save(measurement);
         }
 
         return Result.success("Measurements added");
+    }
+
+    private boolean measurementIsTooOld(WeatherMeasurement measurement) {
+        Instant maxMeasurementOldness = Instant.now().minusSeconds(influxDbConfig.getRetentionPeriod());
+        return measurement.getTimestamp().isBefore(maxMeasurementOldness);
     }
 }
