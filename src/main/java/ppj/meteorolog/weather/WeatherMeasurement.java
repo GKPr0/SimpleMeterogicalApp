@@ -33,10 +33,10 @@ public class WeatherMeasurement {
     @Column
     @NotNull(message = "Humidity is required")
     @Positive(message = "Humidity must be positive number")
-    private double humidity;
+    private Double humidity;
 
     @Column
     @NotNull(message = "Pressure is required")
     @Positive(message = "Pressure must be positive number")
-    private double pressure;
+    private Double pressure;
 }

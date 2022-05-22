@@ -353,10 +353,10 @@ public class WeatherControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {
         "",
-        "\"humidity\":\"\",",
-        "\"humidity\":null,",
-        "\"humidity\":\"blabla\",",
-        "\"humidity\":-1.0,"
+        "\"pressure\":\"\",",
+        "\"pressure\":null,",
+        "\"pressure\":\"blabla\",",
+        "\"pressure\":-1.0,"
     })
     public void testAddWeatherMeasurementForCityWithInvalidPressure_thenStatus400(String pressureContentBody) throws Exception {
         Optional<City> city = cityRepository.findCityByNameAndCountry_Code("Liberec", "CZ");
@@ -371,7 +371,7 @@ public class WeatherControllerTest {
                         "\"timestamp\":\"" + timestamp + "\"," +
                         "\"temperature\":666.5," +
                         pressureContentBody +
-                        "\"humidity\":79.0,}"))
+                        "\"humidity\":79.0}"))
             .andExpect(status().isBadRequest());
     }
 
