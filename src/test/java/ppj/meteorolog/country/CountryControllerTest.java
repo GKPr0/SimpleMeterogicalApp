@@ -15,7 +15,6 @@ import ppj.meteorolog.Application;
 import ppj.meteorolog.city.City;
 import ppj.meteorolog.city.CityRepository;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class CountryRestControllerTest {
+public class CountryControllerTest {
 
     @Autowired
     private CountryDataInitializer dataInitializer;
@@ -59,30 +58,30 @@ public class CountryRestControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void testGetCountries_thenStatus200() throws Exception {
+    public void testGetAllCountries_thenStatus200() throws Exception {
         mvc.perform(get("/api/v1/country"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(4)))
-                .andExpect(jsonPath("$[0].name", is("Czech Republic")))
-                .andExpect(jsonPath("$[0].code", is("CZ")))
-                .andExpect(jsonPath("$[1].name", is("United Kingdom")))
-                .andExpect(jsonPath("$[1].code", is("UK")));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$", hasSize(4)))
+            .andExpect(jsonPath("$[0].name", is("Czech Republic")))
+            .andExpect(jsonPath("$[0].code", is("CZ")))
+            .andExpect(jsonPath("$[1].name", is("United Kingdom")))
+            .andExpect(jsonPath("$[1].code", is("UK")));
     }
 
     @Test
     public void testGetCountry_thenStatus200() throws Exception {
         mvc.perform(get("/api/v1/country/CZ"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.name", is("Czech Republic")))
-                .andExpect(jsonPath("$.code", is("CZ")));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.name", is("Czech Republic")))
+            .andExpect(jsonPath("$.code", is("CZ")));
     }
 
     @Test
     public void testGetNonExistentCountry_thenStatus404() throws Exception {
-        mvc.perform(get("/api/v1/country/XX"))
-                .andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/country/NonExistentCountry"))
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -90,7 +89,7 @@ public class CountryRestControllerTest {
         mvc.perform(post("/api/v1/country")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Test\",\"code\":\"TT\"}"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Optional<Country> createdCountry = countryRepository.findByCode("TT");
         assertTrue(createdCountry.isPresent());
@@ -103,43 +102,45 @@ public class CountryRestControllerTest {
         mvc.perform(post("/api/v1/country")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Test\",\"code\":\"CZ\"}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"name\":\"Test\"}",
-            "{\"name\":\"Test\",\"code\":\"\"}",
-            "{\"name\":\"Test\",\"code\":null}"
+        "",
+        "\"code\":\"\",",
+        "\"code\":null,"
     })
-    public void testCreateCountryWithInvalidCode_thenStatus400(String bodyContent) throws Exception {
+    public void testCreateCountryWithInvalidCode_thenStatus400(String codeContentBody) throws Exception {
         mvc.perform(post("/api/v1/country")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(bodyContent))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code", is("Country code is required")));
+                .content("{" + codeContentBody +
+                         "\"name\":\"Test\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code", is("Country code is required")));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"code\":\"TT\"}",
-            "{\"name\":\"\",\"code\":\"TT\"}",
-            "{\"name\":null,\"code\":\"TT\"}"
+        "",
+        "\"name\":\"\",",
+        "\"name\":null,"
     })
-    public void testCreateCountryWithInvalidName_thenStatus400(String bodyContent) throws Exception {
+    public void testCreateCountryWithInvalidName_thenStatus400(String nameContentBody) throws Exception {
         mvc.perform(post("/api/v1/country")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(bodyContent))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name", is("Country name is required")));
+                .content("{" + nameContentBody +
+                         "\"code\":\"CZ\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.name", is("Country name is required")));
     }
 
     @Test
-    public void testCreateCountryWithEmptyJson_thenStatus400() throws Exception {
+    public void testCreateCountryWithEmptyBody_thenStatus400() throws Exception {
         mvc.perform(post("/api/v1/country")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(""))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -147,7 +148,7 @@ public class CountryRestControllerTest {
         mvc.perform(put("/api/v1/country/CZ")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Czech Republic (Updated)\",\"code\":\"CZE\"}"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Optional<Country> updatedCountry = countryRepository.findByCode("CZE");
         assertTrue(updatedCountry.isPresent());
@@ -159,35 +160,37 @@ public class CountryRestControllerTest {
         mvc.perform(put("/api/v1/country/XX")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Test\",\"code\":\"TT\"}"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"name\":\"Test\"}",
-            "{\"name\":\"Test\",\"code\":\"\"}",
-            "{\"name\":\"Test\",\"code\":null}"
+        "",
+        "\"code\":\"\",",
+        "\"code\":null,"
     })
-    public void testUpdateCountryWithInvalidCode_thenStatus400(String bodyContent) throws Exception {
+    public void testUpdateCountryWithInvalidCode_thenStatus400(String codeContentBody) throws Exception {
         mvc.perform(put("/api/v1/country/CZ")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(bodyContent))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code", is("Country code is required")));
+                .content("{" + codeContentBody +
+                        "\"name\":\"Test\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code", is("Country code is required")));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"code\":\"TT\"}",
-            "{\"name\":\"\",\"code\":\"TT\"}",
-            "{\"name\":null,\"code\":\"TT\"}"
+        "",
+        "\"name\":\"\",",
+        "\"name\":null,"
     })
-    public void testUpdateCountryWithInvalidName_thenStatus400(String bodyContent) throws Exception {
+    public void testUpdateCountryWithInvalidName_thenStatus400(String nameContentBody) throws Exception {
         mvc.perform(put("/api/v1/country/CZ")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(bodyContent))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name", is("Country name is required")));
+                .content("{" + nameContentBody +
+                        "\"code\":\"CZ\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.name", is("Country name is required")));
     }
 
     @Test
@@ -195,13 +198,13 @@ public class CountryRestControllerTest {
         mvc.perform(put("/api/v1/country/CZ")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(""))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
     public void testDeleteCountry_thenStatus200() throws Exception {
         mvc.perform(delete("/api/v1/country/CZ"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Optional<Country> country = countryRepository.findByCode("CZ");
         assertTrue(country.isEmpty());
@@ -210,11 +213,11 @@ public class CountryRestControllerTest {
     @Test
     public void testDeleteNonExistentCountry_thenStatus404() throws Exception {
         mvc.perform(delete("/api/v1/country/XX"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
-    public void testDeleteCountryAndEnsureAllCitiesInCountryWasDeleted_thenStatus200() throws Exception {
+    public void testDeleteCountryAndEnsureAllCitiesInCountryWereDeleted_thenStatus200() throws Exception {
         // Assign Cities to country
         Optional<Country> country = countryRepository.findByCode("CZ");
         assertTrue(country.isPresent());
@@ -226,7 +229,7 @@ public class CountryRestControllerTest {
         assertEquals(cities.spliterator().getExactSizeIfKnown(), 2);
 
         mvc.perform(delete("/api/v1/country/CZ"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Iterable<City> deletedCities = cityRepository.findCitiesByCountry_Code("CZ");
         assertEquals(deletedCities.spliterator().getExactSizeIfKnown(), 0);

@@ -1,6 +1,5 @@
 package ppj.meteorolog.weather;
 
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import ppj.meteorolog.Application;
 import ppj.meteorolog.city.City;
 import ppj.meteorolog.city.CityRepository;
 import ppj.meteorolog.db.InfluxDbConfig;
-import ppj.meteorolog.shared.Result;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -25,7 +23,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -69,24 +66,24 @@ public class WeatherControllerTest {
         UUID cityId = city.get().getId();
 
         mvc.perform(get("/api/v1/weather/current/CZ/Liberec"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.cityID").value(cityId.toString()))
-                .andExpect(jsonPath("$.temperature").value(30.0))
-                .andExpect(jsonPath("$.humidity").value(80.0))
-                .andExpect(jsonPath("$.pressure").value(1000.0));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.cityID").value(cityId.toString()))
+            .andExpect(jsonPath("$.temperature").value(30.0))
+            .andExpect(jsonPath("$.humidity").value(80.0))
+            .andExpect(jsonPath("$.pressure").value(1000.0));
     }
 
     @Test
     public void testGetCurrentWeatherForNonExistentCity_thenStatus404() throws Exception {
         mvc.perform(get("/api/v1/weather/current/CZ/NonExistentCity"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
     public void testGetCurrentWeatherForNonExistentCountry_thenStatus404() throws Exception {
         mvc.perform(get("/api/v1/weather/current/NonExistentCountry/Liberec"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -95,7 +92,7 @@ public class WeatherControllerTest {
         assertTrue(city.isPresent());
 
         mvc.perform(get("/api/v1/weather/current/UK/London"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -106,24 +103,24 @@ public class WeatherControllerTest {
         UUID cityId = city.get().getId();
 
         mvc.perform(get("/api/v1/weather/average/1d/CZ/Liberec"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.cityID").value(cityId.toString()))
-                .andExpect(jsonPath("$.temperature").value(20.0))
-                .andExpect(jsonPath("$.humidity").value(80.0))
-                .andExpect(jsonPath("$.pressure").value(1000.0));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.cityID").value(cityId.toString()))
+            .andExpect(jsonPath("$.temperature").value(20.0))
+            .andExpect(jsonPath("$.humidity").value(80.0))
+            .andExpect(jsonPath("$.pressure").value(1000.0));
     }
 
     @Test
     public void testGetLastDayAverageWeatherForNonExistentCity_thenStatus404() throws Exception {
         mvc.perform(get("/api/v1/weather/average/1d/CZ/NonExistentCity"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
     public void testGetLastDayAverageWeatherForNonExistentCountry_thenStatus404() throws Exception {
         mvc.perform(get("/api/v1/weather/average/1d/NonExistentCountry/Liberec"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -132,7 +129,7 @@ public class WeatherControllerTest {
         assertTrue(city.isPresent());
 
         mvc.perform(get("/api/v1/weather/average/1d/UK/London"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -143,24 +140,24 @@ public class WeatherControllerTest {
         UUID cityId = city.get().getId();
 
         mvc.perform(get("/api/v1/weather/average/1w/CZ/Liberec"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.cityID").value(cityId.toString()))
-                .andExpect(jsonPath("$.temperature").value(21.0))
-                .andExpect(jsonPath("$.humidity").value(80.0))
-                .andExpect(jsonPath("$.pressure").value(1000.0));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.cityID").value(cityId.toString()))
+            .andExpect(jsonPath("$.temperature").value(21.0))
+            .andExpect(jsonPath("$.humidity").value(80.0))
+            .andExpect(jsonPath("$.pressure").value(1000.0));
     }
 
     @Test
     public void testGetLastWeekAverageWeatherForNonExistentCity_thenStatus404() throws Exception {
         mvc.perform(get("/api/v1/weather/average/1w/CZ/NonExistentCity"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
     public void testGetLastWeekAverageWeatherForNonExistentCountry_thenStatus404() throws Exception {
         mvc.perform(get("/api/v1/weather/average/1w/NonExistentCountry/Liberec"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -169,7 +166,7 @@ public class WeatherControllerTest {
         assertTrue(city.isPresent());
 
         mvc.perform(get("/api/v1/weather/average/1w/UK/London"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -180,24 +177,24 @@ public class WeatherControllerTest {
         UUID cityId = city.get().getId();
 
         mvc.perform(get("/api/v1/weather/average/2w/CZ/Liberec"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.cityID").value(cityId.toString()))
-                .andExpect(jsonPath("$.temperature").value(20.0))
-                .andExpect(jsonPath("$.humidity").value(80.0))
-                .andExpect(jsonPath("$.pressure").value(1000.0));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.cityID").value(cityId.toString()))
+            .andExpect(jsonPath("$.temperature").value(20.0))
+            .andExpect(jsonPath("$.humidity").value(80.0))
+            .andExpect(jsonPath("$.pressure").value(1000.0));
     }
 
     @Test
     public void testGetLastTwoWeeksAverageWeatherForNonExistentCity_thenStatus404() throws Exception {
         mvc.perform(get("/api/v1/weather/average/2w/CZ/NonExistentCity"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
     public void testGetLastTwoWeeksAverageWeatherForNonExistentCountry_thenStatus404() throws Exception {
         mvc.perform(get("/api/v1/weather/average/2w/NonExistentCountry/Liberec"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -206,7 +203,7 @@ public class WeatherControllerTest {
         assertTrue(city.isPresent());
 
         mvc.perform(get("/api/v1/weather/average/2w/UK/London"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -224,7 +221,7 @@ public class WeatherControllerTest {
                         "\"temperature\":666.5," +
                         "\"humidity\":79.0," +
                         "\"pressure\":1010.0}"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Optional<WeatherMeasurement> createdMeasurement = weatherRepository.findMeasurementForCityByTimestamp(cityId, timestamp);
         assertTrue(createdMeasurement.isPresent());
@@ -244,7 +241,7 @@ public class WeatherControllerTest {
                         "\"temperature\":666.5," +
                         "\"humidity\":79.0," +
                         "\"pressure\":1010.0}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -264,7 +261,7 @@ public class WeatherControllerTest {
                         "\"temperature\":666.5," +
                         "\"humidity\":79.0," +
                         "\"pressure\":1010.0}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -282,7 +279,7 @@ public class WeatherControllerTest {
                         "\"temperature\":666.5," +
                         "\"humidity\":79.0," +
                         "\"pressure\":1010.0}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
@@ -303,7 +300,7 @@ public class WeatherControllerTest {
                         "\"temperature\":666.5," +
                         "\"humidity\":79.0," +
                         "\"pressure\":1010.0}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
@@ -326,7 +323,7 @@ public class WeatherControllerTest {
                         "\"temperature\":666.5," +
                         "\"humidity\":79.0," +
                         "\"pressure\":1010.0}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
@@ -350,7 +347,7 @@ public class WeatherControllerTest {
                         temperatureContentBody +
                         "\"humidity\":79.0," +
                         "\"pressure\":1010.0}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
@@ -375,7 +372,7 @@ public class WeatherControllerTest {
                         "\"temperature\":666.5," +
                         pressureContentBody +
                         "\"humidity\":79.0,}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
@@ -400,7 +397,15 @@ public class WeatherControllerTest {
                         "\"temperature\":666.5," +
                         humidityContentBody +
                         "\"pressure\":1010.0}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testAddWeatherMeasurementForCityWithEmptyBody_thenStatus400() throws Exception {
+          mvc.perform(post("/api/v1/weather")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(""))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -414,7 +419,7 @@ public class WeatherControllerTest {
         weatherRepository.save(new WeatherMeasurement(timestamp, cityId, 20.0, 80.0, 1000.0));
 
         mvc.perform(delete("/api/v1/weather/CZ/Liberec/" + timestamp))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Optional<WeatherMeasurement> deletedMeasurement = weatherRepository.findMeasurementForCityByTimestamp(cityId, timestamp);
         assertTrue(deletedMeasurement.isEmpty());
@@ -425,7 +430,7 @@ public class WeatherControllerTest {
         Instant timestamp = Instant.now();
 
         mvc.perform(delete("/api/v1/weather/CZ/NonExistentCity/" + timestamp))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -433,7 +438,7 @@ public class WeatherControllerTest {
         Instant timestamp = Instant.now();
 
         mvc.perform(delete("/api/v1/weather/NonExistentCountry/Liberec/" + timestamp))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -444,7 +449,7 @@ public class WeatherControllerTest {
         Instant timestamp = Instant.now();
 
         mvc.perform(delete("/api/v1/weather/CZ/Liberec/" + timestamp))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -453,6 +458,6 @@ public class WeatherControllerTest {
         assertTrue(city.isPresent());
 
         mvc.perform(delete("/api/v1/weather/CZ/Liberec/invalidTimestamp"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 }

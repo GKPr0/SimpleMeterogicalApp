@@ -40,7 +40,7 @@ public class CityServiceTest {
     }
 
     @Test
-    public void testGetAllCitiesInCountry() {
+    public void testGetAllCitiesFromCountry() {
         Result<Iterable<City>> getResult = cityService.getAllCitiesInCountry("CZ");
 
         assertTrue(getResult.getIsSuccess());
@@ -64,8 +64,15 @@ public class CityServiceTest {
     }
 
     @Test
+    public void testGetNonExistentCity() {
+        Result<City> getResult = cityService.getCity("CZ", "NonExistentCity");
+
+        assertNull(getResult);
+    }
+
+    @Test
     public void testGetCityFromNonExistentCountry() {
-        Result<City> getResult = cityService.getCity("Cze", "Prague");
+        Result<City> getResult = cityService.getCity("NonExistentCountry", "Prague");
 
         assertNull(getResult);
     }
@@ -85,7 +92,7 @@ public class CityServiceTest {
     }
 
     @Test
-    public void testCreateAlreadyExistingCity() {
+    public void testCreateAlreadyExistingCityInSpecificCountry() {
         Country targetCountry = new Country("CZ", "Czech Republic");
         City city = new City("Prague", targetCountry);
 

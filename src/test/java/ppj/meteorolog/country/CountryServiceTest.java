@@ -10,7 +10,7 @@ import ppj.meteorolog.shared.Result;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest //TODO Zjistit ja tady použít JPADataTest anotaci
+@SpringBootTest
 @ActiveProfiles("test")
 public class CountryServiceTest {
 
@@ -39,7 +39,7 @@ public class CountryServiceTest {
     }
 
     @Test
-    public void testGetCountryByCode() {
+    public void testGetCountry() {
         Result<Country> getResult = countryService.getCountry("CZ");
 
         assertTrue(getResult.getIsSuccess());
@@ -48,8 +48,8 @@ public class CountryServiceTest {
     }
 
     @Test
-    public void testGetCountryWithNonExistingCode() {
-        Result<Country> getResult = countryService.getCountry("CZe");
+    public void testGetNonExistentCountry() {
+        Result<Country> getResult = countryService.getCountry("NonExistentCountry");
 
         assertNull(getResult);
     }

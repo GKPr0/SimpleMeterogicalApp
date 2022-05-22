@@ -30,13 +30,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class CityRestControllerTest {
+public class CityControllerTest {
 
     @Autowired
     private CityDataInitializer dataInitializer;
 
     @Autowired
     private CityRepository cityRepository;
+
+    @Autowired
+    private MockMvc mvc;
 
     @BeforeEach
     public void setup() {
@@ -48,55 +51,52 @@ public class CityRestControllerTest {
         dataInitializer.clear();
     }
 
-    @Autowired
-    private MockMvc mvc;
-
     @Test
     public void testGetAllCities_thenStatus200() throws Exception{
         mvc.perform(get("/api/v1/city"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(9)))
-                .andExpect(jsonPath("$[0].name", is("Liberec")))
-                .andExpect(jsonPath("$[3].name", is("Cambridge")))
-                .andExpect(jsonPath("$[8].name", is("Milan")));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$", hasSize(9)))
+            .andExpect(jsonPath("$[0].name", is("Liberec")))
+            .andExpect(jsonPath("$[3].name", is("Cambridge")))
+            .andExpect(jsonPath("$[8].name", is("Milan")));
     }
 
     @Test
     public void testGetAllCitiesFromCountry_thenStatus200() throws Exception{
         mvc.perform(get("/api/v1/city/CZ"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].name", is("Liberec")))
-                .andExpect(jsonPath("$[1].name", is("Prague")));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].name", is("Liberec")))
+            .andExpect(jsonPath("$[1].name", is("Prague")));
     }
 
     @Test
-    public void testGetAllCitiesFromInvalidCountry_thenStatus404() throws Exception{
+    public void testGetAllCitiesFromNonExistentCountry_thenStatus404() throws Exception{
         mvc.perform(get("/api/v1/city/XX"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
     public void testGetCity_thenStatus200() throws Exception{
         mvc.perform(get("/api/v1/city/CZ/Liberec"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.name", is("Liberec")))
-                .andExpect(jsonPath("$.country.name", is("Czech Republic")));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.name", is("Liberec")))
+            .andExpect(jsonPath("$.country.name", is("Czech Republic")));
     }
 
     @Test
     public void testGetNonExistentCity_thenStatus404() throws Exception{
-        mvc.perform(get("/api/v1/city/CZ/NewYork"))
-                .andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/city/CZ/NonExistentCity"))
+            .andExpect(status().isNotFound());
     }
 
     @Test
-    public void testGetCityFromInvalidCountry_thenStatus404() throws Exception{
-        mvc.perform(get("/api/v1/city/XX/Liberec"))
-                .andExpect(status().isNotFound());
+    public void testGetCityFromNonExistentCountry_thenStatus404() throws Exception{
+        mvc.perform(get("/api/v1/city/NonExistentCountry/Liberec"))
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -104,7 +104,7 @@ public class CityRestControllerTest {
         mvc.perform(post("/api/v1/city")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Brno\",\"country\":{\"code\":\"CZ\"}}"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Optional<City> createdCity = cityRepository.findCityByNameAndCountry_Code("Brno", "CZ");
         assertTrue(createdCity.isPresent());
@@ -117,7 +117,7 @@ public class CityRestControllerTest {
         mvc.perform(post("/api/v1/city")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Brno\",\"country\":{\"code\":\"XX\"}}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -125,49 +125,52 @@ public class CityRestControllerTest {
         mvc.perform(post("/api/v1/city")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Prague\",\"country\":{\"code\":\"CZ\"}}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"country\":{\"code\":\"CZ\"}}",
-            "{\"name\":\"\",\"country\":{\"code\":\"CZ\"}}",
-            "{\"name\":null,\"country\":{\"code\":\"CZ\"}}"
-            })
-    public void testCreateCityWithInvalidName_thenStatus400(String contentBody) throws Exception{
-        mvc.perform(post("/api/v1/city")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(contentBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name", is("City name is required")));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "{\"name\":\"Brno\"}",
-            "{\"name\":\"Brno\",\"country\":null}"
-            })
-    public void testCreateCityWithInvalidCountry_thenStatus400(String contentBody) throws Exception{
-        mvc.perform(post("/api/v1/city")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(contentBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.country", is("Country is required")));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "{\"name\":\"Brno\",\"country\":\"\"}",
-            "{\"name\":\"Brno\",\"country\":{}}",
-            "{\"name\":\"Brno\",\"country\":{\"code\":null}}",
-            "{\"name\":\"Brno\",\"country\":{\"code\":\"\"}}",
-            "{\"name\":\"Brno\",\"country\":{\"nocode\":\"CZ\"}}"
+        "",
+        "\"name\":\"\",",
+        "\"name\":null,"
     })
-    public void testCreateCityWithInvalidCountryContent_thenStatus400(String contentBody) throws Exception{
+    public void testCreateCityWithInvalidName_thenStatus400(String nameContentBody) throws Exception{
         mvc.perform(post("/api/v1/city")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(contentBody))
-                .andExpect(status().isBadRequest());
+                .content("{" + nameContentBody +
+                        "\"country\":{\"code\":\"CZ\"}}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.name", is("City name is required")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "",
+        "\"country\":null,"
+    })
+    public void testCreateCityWithInvalidCountry_thenStatus400(String countryContentBody) throws Exception{
+        mvc.perform(post("/api/v1/city")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{" + countryContentBody +
+                        "\"name\":\"Brno\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.country", is("Country is required")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "",
+        "\"\"",
+        "\"code\":null",
+        "\"code\":\"\"",
+        "\"nocode\":\"CZ\""
+    })
+    public void testCreateCityWithInvalidCountryContent_thenStatus400(String countryContentBody) throws Exception{
+        mvc.perform(post("/api/v1/city")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"country\":{" + countryContentBody + "}," +
+                        "\"name\":\"Brno\",}"))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -175,7 +178,7 @@ public class CityRestControllerTest {
         mvc.perform(post("/api/v1/city")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(""))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -193,7 +196,7 @@ public class CityRestControllerTest {
         mvc.perform(post("/api/v1/city")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Brno\",\"country\":{\"code\":\"CZ\"}}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -201,7 +204,7 @@ public class CityRestControllerTest {
         mvc.perform(put("/api/v1/city/CZ/Liberec" )
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Liberec (updated)\",\"country\":{\"code\":\"IT\"}}"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Optional<City> updatedCity = cityRepository.findCityByNameAndCountry_Code("Liberec (updated)", "IT");
         assertTrue(updatedCity.isPresent());
@@ -214,7 +217,7 @@ public class CityRestControllerTest {
         mvc.perform(put("/api/v1/city/CZ/Brno" )
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Brno (updated)\",\"country\":{\"code\":\"CZ\"}}"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -222,7 +225,7 @@ public class CityRestControllerTest {
         mvc.perform(put("/api/v1/city/IT/Brno" )
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Brno (updated)\",\"country\":{\"code\":\"IT\"}}"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -230,7 +233,7 @@ public class CityRestControllerTest {
         mvc.perform(put("/api/v1/city/CZ/Liberec" )
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Liberec (updated)\",\"country\":{\"code\":\"CZE\"}}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -238,49 +241,52 @@ public class CityRestControllerTest {
         mvc.perform(put("/api/v1/city/CZ/Prague" )
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Liberec\",\"country\":{\"code\":\"CZ\"}}"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"country\":{\"code\":\"CZ\"}}",
-            "{\"name\":\"\",\"country\":{\"code\":\"CZ\"}}",
-            "{\"name\":null,\"country\":{\"code\":\"CZ\"}}"
+        "",
+        "\"name\":\"\",",
+        "\"name\":null,"
     })
-    public void testUpdateCityWithInvalidName_thenStatus400(String contentBody) throws Exception{
+    public void testUpdateCityWithInvalidName_thenStatus400(String nameContentBody) throws Exception{
         mvc.perform(put("/api/v1/city/CZ/Liberec" )
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(contentBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name", is("City name is required")));
+                .content("{" + nameContentBody +
+                         "\"country\":{\"code\":\"CZ\"}}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.name", is("City name is required")));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"name\":\"Brno\"}",
-            "{\"name\":\"Brno\",\"country\":null}"
+        "",
+        "\"country\":null,"
     })
-    public void testUpdateCityWithInvalidCounty_thenStatus400(String contentBody) throws Exception{
+    public void testUpdateCityWithInvalidCounty_thenStatus400(String countryContentBody) throws Exception{
         mvc.perform(put("/api/v1/city/CZ/Liberec")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(contentBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.country", is("Country is required")));
+                .content("{" + countryContentBody +
+                         "\"name\":\"Brno\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.country", is("Country is required")));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"name\":\"Brno\",\"country\":\"\"}",
-            "{\"name\":\"Brno\",\"country\":{}}",
-            "{\"name\":\"Brno\",\"country\":{\"code\":null}}",
-            "{\"name\":\"Brno\",\"country\":{\"code\":\"\"}}",
-            "{\"name\":\"Brno\",\"country\":{\"nocode\":\"CZ\"}}"
+        "",
+        "\"\"",
+        "\"code\":null",
+        "\"code\":\"\"",
+        "\"nocode\":\"CZ\""
     })
-    public void testUpdateCityWithInvalidCountryContent_thenStatus400(String contentBody) throws Exception{
+    public void testUpdateCityWithInvalidCountryContent_thenStatus400(String countryContentBody) throws Exception{
         mvc.perform(put("/api/v1/city/CZ/Liberec" )
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(contentBody))
-                .andExpect(status().isBadRequest());
+                .content("{\"country\":{" + countryContentBody + "}," +
+                        "\"name\":\"Brno\",}"))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -288,13 +294,13 @@ public class CityRestControllerTest {
         mvc.perform(put("/api/v1/city/CZ/Liberec" )
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(""))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
     public void testDeleteCity_thenStatus200() throws Exception{
         mvc.perform(delete("/api/v1/city/CZ/Liberec"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Optional<City> deletedCity = cityRepository.findCityByNameAndCountry_Code("Liberec", "CZ");
         assertTrue(deletedCity.isEmpty());
@@ -303,12 +309,12 @@ public class CityRestControllerTest {
     @Test
     public void testDeleteNonExistentCity_thenStatus404() throws Exception{
         mvc.perform(delete("/api/v1/city/CZ/XX"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
-    public void testDeleteCityInNonExistentCountry_thenStatus404() throws Exception{
+    public void testDeleteCityFromNonExistentCountry_thenStatus404() throws Exception{
         mvc.perform(delete("/api/v1/city/XX/Liberec"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 }

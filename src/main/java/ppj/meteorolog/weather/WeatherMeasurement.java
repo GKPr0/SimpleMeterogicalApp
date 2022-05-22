@@ -19,24 +19,24 @@ import java.util.UUID;
 @AllArgsConstructor
 public class WeatherMeasurement {
     @Column(timestamp = true)
-    @NotNull
+    @NotNull(message = "Timestamp is required")
     private Instant timestamp;
 
     @Column(tag = true)
-    @NotNull
+    @NotNull(message = "City ID is required")
     private UUID cityID;
 
     @Column
-    @NotNull
+    @NotNull(message = "Temperature is required")
     private Double temperature;
 
     @Column
-    @NotNull
-    @Positive
+    @NotNull(message = "Humidity is required")
+    @Positive(message = "Humidity must be positive number")
     private double humidity;
 
     @Column
-    @NotNull
-    @Positive
+    @NotNull(message = "Pressure is required")
+    @Positive(message = "Pressure must be positive number")
     private double pressure;
 }
